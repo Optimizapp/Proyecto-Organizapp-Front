@@ -1,12 +1,29 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {  EstudianteService } from './services/estudiantes';
+import { Estudiante } from './models/estudiantes.models';
+
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  standalone: true,
+  imports: [CommonModule], 
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App {
-  protected readonly title = signal('mi-primer-proyecto');
+export class AppComponent implements OnInit {
+
+  estudiantes: Estudiante[] = [];
+
+  constructor(private estudiantesService: EstudianteService) {}
+
+  ngOnInit(): void {
+    this.listarEstudiantes();
+  }
+
+  listarEstudiantes(): void {
+    this.estudiantesService.listarEstudiantePrueba().subscribe(data => {
+    this.estudiantes = data;
+    });
+  }
 }
