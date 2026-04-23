@@ -1,5 +1,12 @@
 export interface Company {
-  id: string;
+  id: number;
   name: string;
   nit: string;
+  industry: string;
+}
+
+export interface CompanyRequest {
+  name: string;
+  nit: string;
+  industry?: string;
 }
