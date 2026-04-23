@@ -1,6 +1,16 @@
-<h1>Datos</h1>
-<ul>
-  <li  *ngFor='let estudiante of estudiantes'>
-    {{ estudiante.nombre }} - {{ estudiante.carrera }}
-  </li>
-</ul>
+<div class="layout-wrapper">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-header></app-header>
+    <main class="content-area">
+      <!-- Original Content -->
+      <h1>Datos</h1>
+      <ul>
+        <li *ngFor='let estudiante of estudiantes'>
+          {{ estudiante.nombre }} - {{ estudiante.carrera }}
+        </li>
+      </ul>
+    </main>
+    <app-footer></app-footer>
+  </div>
+</div>
