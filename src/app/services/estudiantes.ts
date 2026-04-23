@@ -20,7 +20,7 @@ export class EstudianteService {
   }
   
 
-  private apiUrl = `${environment.apiUrl}/Estudiante`;
+  private readonly apiUrl = `${environment.apiUrl}/Estudiante`;
 
   constructor(private http: HttpClient) {}
 

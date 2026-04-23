@@ -1,17 +1,23 @@
-<div class="detail-container" *ngIf="process; else noProcess">
+<p *ngIf="isLoading">Cargando...</p>
+
+<p *ngIf="error">{{ error }}</p>
+
+<div class="detail-container" *ngIf="!isLoading && !error && process; else noProcess">
   <h2>Detalle del proceso</h2>
 
   <div class="detail-card">
     <p><strong>ID:</strong> {{ process.id }}</p>
     <p><strong>Nombre:</strong> {{ process.name }}</p>
-    <p><strong>Descripción:</strong> {{ process.description }}</p>
+    <p><strong>Descripción:</strong> {{ process.description || 'Sin descripción' }}</p>
     <p><strong>Estado:</strong> {{ process.status }}</p>
   </div>
 
-  <a routerLink="/processes" class="back-link">← Volver a la lista</a>
+  <a routerLink="/processes" class="back-link">Volver a la lista</a>
 </div>
 
 <ng-template #noProcess>
-  <p>No se encontró el proceso.</p>
-  <a routerLink="/processes">Volver a la lista</a>
+  <div *ngIf="!isLoading && !error">
+    <p>No se encontró el proceso.</p>
+    <a routerLink="/processes">Volver a la lista</a>
+  </div>
 </ng-template>
