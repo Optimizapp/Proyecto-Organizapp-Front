@@ -1,0 +1,20 @@
+<div class="container">
+  <h2>Módulo de procesos</h2>
+  <p class="subtitle">Vista base del visor de procesos.</p>
+
+  <div class="process-grid" *ngIf="processes.length > 0; else noProcesses">
+    <div class="process-card" *ngFor="let process of processes">
+      <h3>{{ process.name }}</h3>
+      <p>{{ process.description }}</p>
+      <span class="status">Estado: {{ process.status }}</span>
+
+      <div class="actions">
+        <a [routerLink]="['/processes', process.id]">Ver detalle</a>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noProcesses>
+    <p>No hay procesos registrados.</p>
+  </ng-template>
+</div>
