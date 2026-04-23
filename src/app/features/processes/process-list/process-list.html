@@ -2,7 +2,11 @@
   <h2>Módulo de procesos</h2>
   <p class="subtitle">Vista base del visor de procesos.</p>
 
-  <div class="process-grid" *ngIf="processes.length > 0; else noProcesses">
+  <p *ngIf="isLoading">Cargando...</p>
+
+  <p *ngIf="error">{{ error }}</p>
+
+  <div class="process-grid" *ngIf="!isLoading && !error && processes.length > 0; else noProcesses">
     <div class="process-card" *ngFor="let process of processes">
       <h3>{{ process.name }}</h3>
       <p>{{ process.description }}</p>
@@ -15,6 +19,6 @@
   </div>
 
   <ng-template #noProcesses>
-    <p>No hay procesos registrados.</p>
+    <p *ngIf="!isLoading && !error">No hay procesos disponibles para mostrar.</p>
   </ng-template>
 </div>

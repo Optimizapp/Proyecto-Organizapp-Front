@@ -3,4 +3,8 @@ export interface Process {
   name: string;
   description?: string;
   status?: string;
+  companyId?: number;
+  userId?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
