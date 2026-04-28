@@ -1,5 +1,5 @@
-import { Role } from './role.models';
-import { Company } from './company.models';
+import { Role } from '../../../models/role.models';
+import { Company } from '../../companies/models/company.model';
 
 export interface User {
   id: string;
