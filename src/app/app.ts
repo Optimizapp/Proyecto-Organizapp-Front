@@ -13,19 +13,4 @@ import { Footer } from './components/layout/footer/footer';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class AppComponent implements OnInit {
-
-  estudiantes: Estudiante[] = [];
-
-  constructor(private estudiantesService: EstudianteService) {}
-
-  ngOnInit(): void {
-    this.listarEstudiantes();
-  }
-
-  listarEstudiantes(): void {
-    this.estudiantesService.listarEstudiantePrueba().subscribe(data => {
-    this.estudiantes = data;
-    });
-  }
-}
+export class AppComponent {}
