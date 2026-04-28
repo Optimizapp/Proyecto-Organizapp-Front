@@ -1,7 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EstudianteService } from './services/estudiantes';
-import { Estudiante } from './models/estudiantes.models';
 import { Header } from './components/layout/header/header';
 import { Sidebar } from './components/layout/sidebar/sidebar';
 import { Footer } from './components/layout/footer/footer';
