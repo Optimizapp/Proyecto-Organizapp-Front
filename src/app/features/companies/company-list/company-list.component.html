@@ -1,5 +1,9 @@
 <div class="container">
   <h2>Gestión de Empresas</h2>
+
+  <button routerLink="/companies/new" class="btn-save" style="margin-bottom: 15px; width: auto;">
+    + Registrar Nueva Empresa
+  </button>
   
   <div *ngIf="loading" class="alert">Cargando empresas...</div>
   <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
