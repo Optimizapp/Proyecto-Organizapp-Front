@@ -1,5 +1,6 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { isPlatformBrowser } from '@angular/common'; // Fundamental para SSR
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { AuthResponse, LoginRequest } from '../models/auth.model';
 
@@ -9,29 +10,44 @@ import { AuthResponse, LoginRequest } from '../models/auth.model';
 export class AuthService {
   private apiUrl = 'http://localhost:8080/api/auth';
   private http = inject(HttpClient);
-  
-  // El BehaviorSubject mantiene el estado del token para toda la app
-  private tokenSubject = new BehaviorSubject<string | null>(localStorage.getItem('token'));
+  private platformId = inject(PLATFORM_ID); // Inyectamos el ID de la plataforma
+
+  // Inicializamos en null de forma segura
+  private tokenSubject = new BehaviorSubject<string | null>(null);
+
+  constructor() {
+    // Solo accedemos al almacenamiento si estamos en el navegador
+    if (isPlatformBrowser(this.platformId)) {
+      const savedToken = localStorage.getItem('token');
+      if (savedToken) {
+        this.tokenSubject.next(savedToken);
+      }
+    }
+  }
 
   login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
-        // Al recibir el JWT, lo persistimos
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response));
+        // Protección de plataforma para persistencia
+        if (isPlatformBrowser(this.platformId)) {
+          localStorage.setItem('token', response.token);
+          localStorage.setItem('user', JSON.stringify(response));
+        }
         this.tokenSubject.next(response.token);
       })
     );
   }
 
   logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
     this.tokenSubject.next(null);
   }
 
-  // Método para que los Guards verifiquen si el usuario está activo
   isAuthenticated(): boolean {
+    // El valor del Subject es nuestra fuente de verdad reactiva
     return !!this.tokenSubject.value;
   }
 
