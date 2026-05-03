@@ -2,8 +2,32 @@
   <h2>Módulo de procesos</h2>
   <p class="subtitle">Vista base del visor de procesos.</p>
 
-  <div class="process-grid" *ngIf="processes.length > 0; else noProcesses">
-    <div class="process-card" *ngFor="let process of processes">
+  <div class="filters">
+    <label>
+      Buscar por nombre:
+      <input
+        type="text"
+        [(ngModel)]="nameFilter"
+        placeholder="Ej: ventas"
+      />
+    </label>
+
+    <label>
+      Filtrar por estado:
+      <select [(ngModel)]="statusFilter">
+        <option value="">Todos</option>
+        <option value="activo">Activo</option>
+        <option value="borrador">Borrador</option>
+        <option value="inactivo">Inactivo</option>
+      </select>
+    </label>
+
+    <button type="button" (click)="applyFilters()">Buscar</button>
+    <button type="button" class="secondary" (click)="clearFilters()">Limpiar</button>
+  </div>
+
+  <div class="process-grid" *ngIf="filteredProcesses.length > 0; else noProcesses">
+    <div class="process-card" *ngFor="let process of filteredProcesses">
       <h3>{{ process.name }}</h3>
       <p>{{ process.description }}</p>
       <span class="status">Estado: {{ process.status }}</span>
@@ -15,6 +39,6 @@
   </div>
 
   <ng-template #noProcesses>
-    <p>No hay procesos registrados.</p>
+    <p>No hay procesos registrados o no coinciden con los filtros.</p>
   </ng-template>
 </div>

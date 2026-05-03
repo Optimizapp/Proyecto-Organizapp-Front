@@ -40,4 +40,42 @@
   text-decoration: none;
   color: #1976d2;
   font-weight: 500;
+  .filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid #dcdcdc;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.filters input,
+.filters select {
+  padding: 8px;
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+}
+
+.filters button {
+  padding: 9px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #1976d2;
+  color: white;
+  cursor: pointer;
+}
+
+.filters button.secondary {
+  background: #666666;
+}
 }
