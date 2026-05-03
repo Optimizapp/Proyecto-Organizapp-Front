@@ -1,7 +1,13 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Process } from './models/process.model';
+import {
+  CreateProcessRequest,
+  Process,
+  ProcessResponse,
+  ProcessStatus,
+  UpdateProcessRequest
+} from '../../core/models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -12,20 +18,30 @@ export class ProcessService {
 
   constructor(private http: HttpClient) {}
 
-  getProcesses(): Observable<Process[]> {
-    return this.http.get<Process[]>(this.apiUrl);
+  getProcesses(companyId?: number, status?: ProcessStatus): Observable<ProcessResponse[]> {
+    let params = new HttpParams();
+
+    if (companyId !== undefined) {
+      params = params.set('companyId', companyId);
+    }
+
+    if (status) {
+      params = params.set('status', status);
+    }
+
+    return this.http.get<ProcessResponse[]>(this.apiUrl, { params });
   }
 
-  getProcessById(id: number): Observable<Process> {
-    return this.http.get<Process>(`${this.apiUrl}/${id}`);
+  getProcessById(id: number): Observable<ProcessResponse> {
+    return this.http.get<ProcessResponse>(`${this.apiUrl}/${id}`);
   }
 
-  createProcess(process: Process): Observable<Process> {
-    return this.http.post<Process>(this.apiUrl, process);
+  createProcess(request: CreateProcessRequest): Observable<ProcessResponse> {
+    return this.http.post<ProcessResponse>(this.apiUrl, request);
   }
 
-  updateProcess(id: number, process: Process): Observable<Process> {
-    return this.http.put<Process>(`${this.apiUrl}/${id}`, process);
+  updateProcess(id: number, request: UpdateProcessRequest): Observable<ProcessResponse> {
+    return this.http.put<ProcessResponse>(`${this.apiUrl}/${id}`, request);
   }
 
   deleteProcess(id: number): Observable<void> {

@@ -1,33 +1,60 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Company } from '../features/companies/models/company.model';
+import { environment } from '../../environments/environment';
+import {
+  Company,
+  CompanyResponse,
+  CreateCompanyRequest,
+  RegisterCompanyRequest,
+  RegisterCompanyResponse,
+  UpdateCompanyRequest
+} from '../core/models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CompanyService {
-  // Ajusta esta URL si tu backend corre en otro puerto, pero generalmente es localhost:8080
-  private apiUrl = 'http://localhost:8080/api/companies';
+  private readonly apiUrl = `${environment.apiUrl}/companies`;
   private http = inject(HttpClient);
 
-  // Obtener todas las empresas
-  getAll(): Observable<Company[]> {
-    return this.http.get<Company[]>(this.apiUrl);
+  getCompanies(): Observable<CompanyResponse[]> {
+    return this.http.get<CompanyResponse[]>(this.apiUrl);
   }
 
-  // Crear una nueva empresa
-  create(company: Company): Observable<Company> {
-    return this.http.post<Company>(this.apiUrl, company);
+  getCompanyById(id: number): Observable<CompanyResponse> {
+    return this.http.get<CompanyResponse>(`${this.apiUrl}/${id}`);
   }
 
-  // Actualizar una empresa
-  update(id: number, company: Company): Observable<Company> {
-    return this.http.put<Company>(`${this.apiUrl}/${id}`, company);
+  createCompany(request: CreateCompanyRequest): Observable<CompanyResponse> {
+    return this.http.post<CompanyResponse>(this.apiUrl, request);
   }
 
-  // Eliminar una empresa
-  delete(id: number): Observable<void> {
+  updateCompany(id: number, request: UpdateCompanyRequest): Observable<CompanyResponse> {
+    return this.http.put<CompanyResponse>(`${this.apiUrl}/${id}`, request);
+  }
+
+  deleteCompany(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  registerCompany(request: RegisterCompanyRequest): Observable<RegisterCompanyResponse> {
+    return this.http.post<RegisterCompanyResponse>(`${this.apiUrl}/register`, request);
+  }
+
+  getAll(): Observable<Company[]> {
+    return this.getCompanies();
+  }
+
+  create(company: CreateCompanyRequest): Observable<Company> {
+    return this.createCompany(company);
+  }
+
+  update(id: number, company: UpdateCompanyRequest): Observable<Company> {
+    return this.updateCompany(id, company);
+  }
+
+  delete(id: number): Observable<void> {
+    return this.deleteCompany(id);
   }
 }

@@ -1,9 +1,19 @@
 import { Routes } from '@angular/router';
+import { CompanyList } from './features/companies/company-list/company-list';
+import { LaneList } from './features/lanes/lane-list/lane-list';
+import { PoolList } from './features/pools/pool-list/pool-list';
 import { ProcessList } from './features/processes/process-list/process-list';
 import { ProcessDetail } from './features/processes/process-detail/process-detail';
+import { RoleList } from './features/roles/role-list/role-list';
+import { UserList } from './features/users/user-list/user-list';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'processes', pathMatch: 'full' },
+  { path: 'companies', component: CompanyList },
+  { path: 'users', component: UserList },
+  { path: 'roles', component: RoleList },
+  { path: 'pools', component: PoolList },
+  { path: 'lanes', component: LaneList },
   { path: 'processes', component: ProcessList },
   { path: 'processes/:id', component: ProcessDetail }
 ];

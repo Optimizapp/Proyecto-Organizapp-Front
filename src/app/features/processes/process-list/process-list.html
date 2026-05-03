@@ -5,6 +5,9 @@
   <p *ngIf="isLoading">Cargando...</p>
 
   <p *ngIf="error">{{ error }}</p>
+  <ul *ngIf="(fieldErrors | keyvalue).length > 0">
+    <li *ngFor="let fieldError of fieldErrors | keyvalue">{{ fieldError.key }}: {{ fieldError.value }}</li>
+  </ul>
 
   <div class="process-grid" *ngIf="!isLoading && !error && processes.length > 0; else noProcesses">
     <div class="process-card" *ngFor="let process of processes">

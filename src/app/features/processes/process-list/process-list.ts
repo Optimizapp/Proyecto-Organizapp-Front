@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { finalize } from 'rxjs';
+import { ApiErrorService } from '../../../core/services/api-error.service';
 import { ProcessService } from '../process.service';
 import { Process } from '../models/process.model';
 
@@ -17,8 +17,12 @@ export class ProcessList implements OnInit {
   processes: Process[] = [];
   isLoading = false;
   error: string | null = null;
+  fieldErrors: Record<string, string> = {};
 
-  constructor(private processService: ProcessService) {}
+  constructor(
+    private processService: ProcessService,
+    private apiErrorService: ApiErrorService
+  ) {}
 
   ngOnInit(): void {
     this.loadProcesses();
@@ -27,6 +31,7 @@ export class ProcessList implements OnInit {
   private loadProcesses(): void {
     this.isLoading = true;
     this.error = null;
+    this.fieldErrors = {};
 
     this.processService
       .getProcesses()
@@ -35,22 +40,11 @@ export class ProcessList implements OnInit {
         next: (data) => {
           this.processes = data;
         },
-        error: (error: HttpErrorResponse) => {
+        error: (error: unknown) => {
           this.processes = [];
-          this.error = this.getErrorMessage(error);
+          this.error = this.apiErrorService.getMessage(error);
+          this.fieldErrors = this.apiErrorService.getFieldErrors(error);
         }
       });
-  }
-
-  private getErrorMessage(error: HttpErrorResponse): string {
-    if (error.status === 0) {
-      return 'No fue posible conectar con el servidor. Verifica la red o que el backend este activo.';
-    }
-
-    if (error.status === 404) {
-      return 'No se encontro el recurso de procesos en el backend.';
-    }
-
-    return 'Ocurrio un error al cargar los procesos. Intenta nuevamente.';
   }
 }
