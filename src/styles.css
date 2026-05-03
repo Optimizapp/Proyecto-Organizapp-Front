@@ -42,6 +42,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  margin-left: var(--sidebar-width);
   transition: margin-left var(--transition-speed) ease;
 }
 
@@ -49,4 +50,16 @@ body {
   flex: 1;
   padding: 2rem;
   overflow-y: auto;
+}
+
+.feature-page {
+  max-width: 960px;
+}
+
+.feature-page h2 {
+  margin-bottom: 0.75rem;
+}
+
+.feature-page p {
+  color: var(--text-secondary);
 }

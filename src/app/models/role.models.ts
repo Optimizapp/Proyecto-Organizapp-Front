@@ -1,5 +1,1 @@
-export enum Role {
-  ADMIN = 'ADMIN',
-  MANAGER = 'MANAGER',
-  USER = 'USER'
-}
+export * from '../core/models/role.model';

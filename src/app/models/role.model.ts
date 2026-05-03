@@ -1,4 +1,1 @@
-export interface Role {
-  id: number;
-  name: string;
-}
+export * from '../core/models/role.model';
