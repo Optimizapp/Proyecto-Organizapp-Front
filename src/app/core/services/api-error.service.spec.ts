@@ -80,4 +80,35 @@ describe('ApiErrorService', () => {
       })
     );
   });
+
+  it('should handle 400 errors without response body or fields', () => {
+    const error = new HttpErrorResponse({
+      status: 400,
+      statusText: 'Bad Request',
+      url: '/api/users'
+    });
+
+    expect(service.getMessage(error)).toBe('La solicitud contiene datos invalidos. Revisa la informacion e intenta nuevamente.');
+    expect(service.getFieldErrors(error)).toEqual({});
+  });
+
+  it('should handle 409 conflict errors', () => {
+    const error = new HttpErrorResponse({
+      status: 409,
+      statusText: 'Conflict',
+      url: '/api/roles'
+    });
+
+    expect(service.getMessage(error)).toBe('La solicitud genera un conflicto con el estado actual de los datos.');
+  });
+
+  it('should handle 500 internal server errors', () => {
+    const error = new HttpErrorResponse({
+      status: 500,
+      statusText: 'Internal Server Error',
+      url: '/api/processes'
+    });
+
+    expect(service.getMessage(error)).toBe('El servidor no pudo procesar la solicitud. Intenta nuevamente mas tarde.');
+  });
 });
