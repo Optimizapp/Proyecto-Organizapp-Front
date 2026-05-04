@@ -1,6 +1,31 @@
 <div class="container">
-  <h2>Módulo de procesos</h2>
+  <h2>Modulo de procesos</h2>
   <p class="subtitle">Vista base del visor de procesos.</p>
+
+  <form class="filters" (ngSubmit)="applyFilters()">
+    <label>
+      Buscar por nombre
+      <input
+        type="text"
+        name="nameFilter"
+        [(ngModel)]="nameFilter"
+        placeholder="Ej: ventas"
+      />
+    </label>
+
+    <label>
+      Filtrar por estado
+      <select name="statusFilter" [(ngModel)]="statusFilter">
+        <option value="">Todos</option>
+        <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+      </select>
+    </label>
+
+    <div class="filter-actions">
+      <button type="submit" [disabled]="isLoading">Buscar</button>
+      <button type="button" class="secondary" (click)="clearFilters()" [disabled]="isLoading">Limpiar</button>
+    </div>
+  </form>
 
   <p *ngIf="isLoading">Cargando...</p>
 
@@ -9,8 +34,8 @@
     <li *ngFor="let fieldError of fieldErrors | keyvalue">{{ fieldError.key }}: {{ fieldError.value }}</li>
   </ul>
 
-  <div class="process-grid" *ngIf="!isLoading && !error && processes.length > 0; else noProcesses">
-    <div class="process-card" *ngFor="let process of processes">
+  <div class="process-grid" *ngIf="!isLoading && !error && filteredProcesses.length > 0; else noProcesses">
+    <div class="process-card" *ngFor="let process of filteredProcesses">
       <h3>{{ process.name }}</h3>
       <p>{{ process.description }}</p>
       <span class="status">Estado: {{ process.status }}</span>
