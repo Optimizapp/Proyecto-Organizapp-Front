@@ -1,18 +1,18 @@
-name: Deploy Frontend
+name: Deploy On Premise
 
 on:
   workflow_dispatch:
 
 env:
   IMAGE_NAME: ghcr.io/optimizapp/proyecto_organizapp_front
-  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
 
 permissions:
   contents: read
   packages: write
 
 jobs:
-  build-push-deploy:
+  docker:
+    name: Build and push Docker image
     runs-on: ubuntu-latest
 
     steps:
@@ -32,12 +32,30 @@ jobs:
       - name: Push Docker image
         run: docker push ${{ env.IMAGE_NAME }}:latest
 
+  deploy-on-premise:
+    name: Deploy on premise
+    runs-on: ubuntu-latest
+    needs: docker
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Kubernetes credentials
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        run: |
+          if [ -z "$KUBE_CONFIG" ]; then
+            echo "Missing required GitHub secret: KUBE_CONFIG"
+            exit 1
+          fi
+
       - name: Configure kubeconfig
-        if: ${{ env.KUBE_CONFIG != '' }}
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
         run: |
           mkdir -p "$HOME/.kube"
           echo "$KUBE_CONFIG" | base64 -d > "$HOME/.kube/config"
 
-      - name: Apply Kubernetes manifests
-        if: ${{ env.KUBE_CONFIG != '' }}
+      - name: Apply Kubernetes deployment
         run: kubectl apply -f k8s/deployment.yaml
