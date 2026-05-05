@@ -2,6 +2,13 @@ name: Deploy On Premise
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - Frontend CI
+    branches:
+      - main
+    types:
+      - completed
 
 env:
   IMAGE_NAME: ghcr.io/optimizapp/proyecto_organizapp_front
@@ -14,6 +21,7 @@ jobs:
   docker:
     name: Build and push Docker image
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout repository
