@@ -1,0 +1,74 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend
+  namespace: grupo14
+data:
+  API_BACKEND_URL: "http://organizapp-backend:8080"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: organizapp-frontend
+  namespace: grupo14
+  labels:
+    app: organizapp-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: organizapp-frontend
+  template:
+    metadata:
+      labels:
+        app: organizapp-frontend
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: organizapp-frontend
+          image: ghcr.io/optimizapp/proyecto_organizapp_front:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: API_BACKEND_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: frontend
+                  key: API_BACKEND_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: organizapp-frontend
+  namespace: grupo14
+  labels:
+    app: organizapp-frontend
+spec:
+  selector:
+    app: organizapp-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: organizapp-frontend
+  namespace: grupo14
+spec:
+  ingressClassName: public
+  rules:
+    - host: grupo14.inphotech.co
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: organizapp-frontend
+                port:
+                  number: 80

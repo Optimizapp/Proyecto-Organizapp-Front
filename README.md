@@ -118,6 +118,17 @@ JWT, guards definitivos e interceptor JWT estan pendientes porque el backend tod
 
 Esta estructura sigue el enfoque de la presentacion "Despliegue de Angular - Hosting tradicional / Docker / Kubernetes": Angular se compila y se sirve con Nginx en una imagen Docker, y luego puede desplegarse en Kubernetes con Deployment, Service e Ingress.
 
+El frontend sigue la misma convencion de despliegue usada por el backend:
+
+- `Dockerfile` en la raiz del repositorio.
+- Workflow en `.github/workflows/deploy.yaml`.
+- Manifiestos Kubernetes en `k8s/deployment.yaml`.
+- Namespace Kubernetes: `grupo14`.
+- Imagen esperada: `ghcr.io/optimizapp/proyecto_organizapp_front:latest`.
+- `imagePullSecrets`: `ghcr-secret`.
+
+El frontend se sirve por Nginx en el puerto `80`. El backend se espera en Kubernetes como `organizapp-backend` en el puerto `8080`.
+
 ### Dockerfile
 
 El `Dockerfile` arma la imagen de la aplicacion Angular:
@@ -139,42 +150,32 @@ El archivo `nginx.conf` configura Nginx para servir Angular como SPA:
 
 Esto permite que rutas como `/processes` o `/processes/1` funcionen al recargar la pagina desde el navegador.
 
-### .github/workflows/deploy.yml
+### .github/workflows/deploy.yaml
 
-El workflow `.github/workflows/deploy.yml` representa el paso "Actions - Despliegue automatico":
+El workflow `.github/workflows/deploy.yaml` representa el paso "Actions - Despliegue automatico":
 
 - Hace checkout del repositorio.
-- Construye la imagen Docker.
-- Deja preparados los pasos para login y push al registry.
-- Los pasos de login y push quedan deshabilitados con `if: ${{ false }}` hasta reemplazar placeholders y confirmar secretos.
+- Inicia sesion en GHCR usando `secrets.GITHUB_TOKEN`.
+- Construye la imagen `ghcr.io/optimizapp/proyecto_organizapp_front:latest`.
+- Publica la imagen en GHCR.
+- Aplica `kubectl apply -f k8s/deployment.yaml` si existe el secreto `KUBE_CONFIG`.
 
 Antes de usarlo en un despliegue real se deben reemplazar:
 
-- `<url imagen>`
-- `<registry>`
-- `<usuario o secreto GitHub Actions>`
-- `<token o secreto GitHub Actions>`
-- Los secretos reales de GitHub Actions.
+- Configurar permisos de Packages/GHCR para publicar la imagen.
+- Crear el secreto `KUBE_CONFIG` en GitHub Actions con el kubeconfig del cluster codificado en base64.
+- Confirmar que el secret Kubernetes `ghcr-secret` exista en el namespace `grupo14`.
 
 ### deployment.yaml
 
-El archivo `deployment.yaml` contiene la estructura Kubernetes indicada por la presentacion:
+El archivo `k8s/deployment.yaml` contiene la estructura Kubernetes indicada por la presentacion y alineada con el backend:
 
+- `ConfigMap` llamado `frontend` con `API_BACKEND_URL=http://organizapp-backend:8080`.
 - `Deployment`
 - `Service`
 - `Ingress`
 
-Mantiene los placeholders de la presentacion porque no hay valores reales confirmados:
-
-- `<nombre>`
-- `<namespace>`
-- `<url imagen>`
-
-Tambien mantiene el host:
-
-```text
-<namespace>.inphotech.co
-```
+Usa `namespace: grupo14`, `name: organizapp-frontend`, `app: organizapp-frontend`, `replicas: 2`, imagen `ghcr.io/optimizapp/proyecto_organizapp_front:latest`, `ingressClassName: public` y host `grupo14.inphotech.co`.
 
 ### Build local
 
