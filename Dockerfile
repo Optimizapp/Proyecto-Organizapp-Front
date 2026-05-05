@@ -1,4 +1,4 @@
-# Build Angular SSR application.
+# Armado de la imagen Angular para hosting tradicional con Nginx.
 FROM node:20-alpine AS build
 
 WORKDIR /app
@@ -9,18 +9,14 @@ RUN npm ci
 COPY . .
 RUN npm run build -- --configuration production
 
-# Runtime for the Angular SSR server generated in dist/mi-primer-proyecto/server.
-FROM node:20-alpine AS runtime
+FROM nginx:1.27-alpine
 
-WORKDIR /app
-ENV NODE_ENV=production
-ENV PORT=4000
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist/mi-primer-proyecto/browser /usr/share/nginx/html
 
-COPY package*.json ./
-RUN npm ci --omit=dev
+# Angular SSR genera index.csr.html en la salida browser; Nginx SPA espera index.html.
+RUN if [ -f /usr/share/nginx/html/index.csr.html ] && [ ! -f /usr/share/nginx/html/index.html ]; then cp /usr/share/nginx/html/index.csr.html /usr/share/nginx/html/index.html; fi
 
-COPY --from=build /app/dist ./dist
+EXPOSE 80
 
-EXPOSE 4000
-
-CMD ["node", "dist/mi-primer-proyecto/server/server.mjs"]
+CMD ["nginx", "-g", "daemon off;"]
