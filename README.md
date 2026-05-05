@@ -121,13 +121,13 @@ Esta estructura sigue el enfoque de la presentacion "Despliegue de Angular - Hos
 El frontend sigue la misma convencion de despliegue usada por el backend:
 
 - `Dockerfile` en la raiz del repositorio.
-- Workflow en `.github/workflows/deploy.yaml`.
+- Workflow en `.github/workflows/deploy.yml`.
 - Manifiestos Kubernetes en `k8s/deployment.yaml`.
 - Namespace Kubernetes: `grupo14`.
 - Imagen esperada: `ghcr.io/optimizapp/proyecto_organizapp_front:latest`.
 - `imagePullSecrets`: `ghcr-secret`.
 
-El frontend se sirve por Nginx en el puerto `80`. El backend se espera en Kubernetes como `organizapp-backend` en el puerto `8080`.
+El frontend se sirve por Nginx en el puerto `80`. El backend se espera en Kubernetes por el puerto `8080`.
 
 ### Dockerfile
 
@@ -150,15 +150,15 @@ El archivo `nginx.conf` configura Nginx para servir Angular como SPA:
 
 Esto permite que rutas como `/processes` o `/processes/1` funcionen al recargar la pagina desde el navegador.
 
-### .github/workflows/deploy.yaml
+### .github/workflows/deploy.yml
 
-El workflow `.github/workflows/deploy.yaml` representa el paso "Actions - Despliegue automatico":
+El workflow `.github/workflows/deploy.yml` representa el paso "Actions - Despliegue automatico" y separa dos momentos:
 
 - Hace checkout del repositorio.
 - Inicia sesion en GHCR usando `secrets.GITHUB_TOKEN`.
 - Construye la imagen `ghcr.io/optimizapp/proyecto_organizapp_front:latest`.
 - Publica la imagen en GHCR.
-- Aplica `kubectl apply -f k8s/deployment.yaml` si existe el secreto `KUBE_CONFIG`.
+- Ejecuta el despliegue on premise con `kubectl apply -f k8s/deployment.yaml`.
 
 Antes de usarlo en un despliegue real se deben reemplazar:
 
@@ -168,14 +168,13 @@ Antes de usarlo en un despliegue real se deben reemplazar:
 
 ### deployment.yaml
 
-El archivo `k8s/deployment.yaml` contiene la estructura Kubernetes indicada por la presentacion y alineada con el backend:
+El archivo `k8s/deployment.yaml` contiene la estructura Kubernetes indicada por la presentacion:
 
-- `ConfigMap` llamado `frontend` con `API_BACKEND_URL=http://organizapp-backend:8080`.
 - `Deployment`
 - `Service`
 - `Ingress`
 
-Usa `namespace: grupo14`, `name: organizapp-frontend`, `app: organizapp-frontend`, `replicas: 2`, imagen `ghcr.io/optimizapp/proyecto_organizapp_front:latest`, `ingressClassName: public` y host `grupo14.inphotech.co`.
+Usa `namespace: grupo14`, `name: organizapp-frontend`, imagen `ghcr.io/optimizapp/proyecto_organizapp_front:latest`, `containerPort: 80`, `imagePullSecrets: ghcr-secret`, `ingressClassName: nginx`, annotation `nginx.ingress.kubernetes.io/rewrite-target: /` y host `grupo14.inphotech.co`.
 
 ### Build local
 

@@ -1,21 +1,12 @@
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: frontend
-  namespace: grupo14
-data:
-  API_BACKEND_URL: "http://organizapp-backend:8080"
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: organizapp-frontend
   namespace: grupo14
   labels:
-    app: organizapp-frontend
+    app: angular-app
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: organizapp-frontend
@@ -24,19 +15,13 @@ spec:
       labels:
         app: organizapp-frontend
     spec:
-      imagePullSecrets:
-        - name: ghcr-secret
       containers:
-        - name: organizapp-frontend
+        - name: angular-app
           image: ghcr.io/optimizapp/proyecto_organizapp_front:latest
           ports:
             - containerPort: 80
-          env:
-            - name: API_BACKEND_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: frontend
-                  key: API_BACKEND_URL
+      imagePullSecrets:
+        - name: ghcr-secret
 ---
 apiVersion: v1
 kind: Service
@@ -59,8 +44,10 @@ kind: Ingress
 metadata:
   name: organizapp-frontend
   namespace: grupo14
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
-  ingressClassName: public
+  ingressClassName: nginx
   rules:
     - host: grupo14.inphotech.co
       http:
