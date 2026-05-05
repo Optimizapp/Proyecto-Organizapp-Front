@@ -114,16 +114,92 @@ El frontend centraliza la interpretacion en `src/app/core/services/api-error.ser
 
 JWT, guards definitivos e interceptor JWT estan pendientes porque el backend todavia no tiene Spring Security/JWT final. No se debe simular seguridad en el frontend antes de cerrar el contrato backend.
 
-## Docker
+## Despliegue Angular con Docker y Kubernetes
 
-El proyecto tiene SSR habilitado en `angular.json` (`outputMode: "server"`), por eso el Dockerfile usa Node.js y ejecuta el servidor generado por Angular:
+Esta estructura sigue el enfoque de la presentacion "Despliegue de Angular - Hosting tradicional / Docker / Kubernetes": Angular se compila y se sirve con Nginx en una imagen Docker, y luego puede desplegarse en Kubernetes con Deployment, Service e Ingress.
+
+### Dockerfile
+
+El `Dockerfile` arma la imagen de la aplicacion Angular:
+
+1. Usa una etapa `node:20-alpine` para instalar dependencias y ejecutar `npm run build -- --configuration production`.
+2. Usa una etapa `nginx:1.27-alpine` para servir los archivos generados.
+3. Copia la salida real del build desde `dist/mi-primer-proyecto/browser`.
+4. Expone el puerto `80`.
+
+Nota: el proyecto conserva configuracion SSR en `angular.json` (`outputMode: "server"`). Para cumplir el enfoque de hosting tradicional de la presentacion, la imagen Docker sirve la salida `browser` con Nginx. Como Angular SSR genera `index.csr.html` en esa salida, el Dockerfile crea `index.html` a partir de ese archivo para que el fallback SPA de Nginx funcione.
+
+### nginx.conf
+
+El archivo `nginx.conf` configura Nginx para servir Angular como SPA:
+
+- Escucha en puerto `80`.
+- Usa `/usr/share/nginx/html` como raiz.
+- Redirige rutas internas de Angular a `/index.html` con `try_files`.
+
+Esto permite que rutas como `/processes` o `/processes/1` funcionen al recargar la pagina desde el navegador.
+
+### .github/workflows/deploy.yml
+
+El workflow `.github/workflows/deploy.yml` representa el paso "Actions - Despliegue automatico":
+
+- Hace checkout del repositorio.
+- Construye la imagen Docker.
+- Deja preparados los pasos para login y push al registry.
+- Los pasos de login y push quedan deshabilitados con `if: ${{ false }}` hasta reemplazar placeholders y confirmar secretos.
+
+Antes de usarlo en un despliegue real se deben reemplazar:
+
+- `<url imagen>`
+- `<registry>`
+- `<usuario o secreto GitHub Actions>`
+- `<token o secreto GitHub Actions>`
+- Los secretos reales de GitHub Actions.
+
+### deployment.yaml
+
+El archivo `deployment.yaml` contiene la estructura Kubernetes indicada por la presentacion:
+
+- `Deployment`
+- `Service`
+- `Ingress`
+
+Mantiene los placeholders de la presentacion porque no hay valores reales confirmados:
+
+- `<nombre>`
+- `<namespace>`
+- `<url imagen>`
+
+Tambien mantiene el host:
+
+```text
+<namespace>.inphotech.co
+```
+
+### Build local
+
+Para generar la salida de Angular localmente:
+
+```bash
+npm run build
+```
+
+En Windows, si PowerShell bloquea `npm.ps1`:
+
+```bash
+npm.cmd run build
+```
+
+### Probar con Docker Desktop
+
+Con Docker Desktop activo:
 
 ```bash
 docker build -t optimizapp-front .
-docker run --rm -p 4000:4000 optimizapp-front
+docker run --rm -p 8080:80 optimizapp-front
 ```
 
-La aplicacion queda disponible en `http://localhost:4000/`.
+La aplicacion queda disponible en `http://localhost:8080/`.
 
 ## CI
 
