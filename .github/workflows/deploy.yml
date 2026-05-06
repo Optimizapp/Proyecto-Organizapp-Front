@@ -65,7 +65,7 @@ jobs:
 
   deploy-on-premise:
     name: Deploy on premise
-    runs-on: ubuntu-latest
+    runs-on: main
     needs: docker
     if: ${{ github.event_name != 'pull_request' }}
 
@@ -73,21 +73,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Validate Kubernetes credentials
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-        run: |
-          if [ -z "$KUBE_CONFIG" ]; then
-            echo "Missing required GitHub secret: KUBE_CONFIG"
-            exit 1
-          fi
-
-      - name: Configure kubeconfig
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-        run: |
-          mkdir -p "$HOME/.kube"
-          echo "$KUBE_CONFIG" | base64 -d > "$HOME/.kube/config"
-
       - name: Apply Kubernetes deployment
-        run: kubectl apply -f k8s/deployment.yaml
+        run: sudo microk8s kubectl apply -f k8s/deployment.yaml
+
+      - name: Restart Kubernetes deployment
+        run: sudo microk8s kubectl rollout restart deployment/organizapp-frontend -n grupo14
