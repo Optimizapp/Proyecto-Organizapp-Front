@@ -154,16 +154,17 @@ Esto permite que rutas como `/processes` o `/processes/1` funcionen al recargar 
 
 El workflow `.github/workflows/deploy.yml` representa el paso "Actions - Despliegue automatico" y separa dos momentos:
 
-- Hace checkout del repositorio.
+- Valida Angular con build y tests.
 - Inicia sesion en GHCR usando `secrets.GITHUB_TOKEN`.
 - Construye la imagen `ghcr.io/optimizapp/proyecto_organizapp_front:latest`.
 - Publica la imagen en GHCR.
-- Ejecuta el despliegue on premise con `kubectl apply -f k8s/deployment.yaml`.
+- Ejecuta el despliegue on premise en el runner `main` con `sudo microk8s kubectl apply -f k8s/deployment.yaml`.
+- Reinicia el deployment con `sudo microk8s kubectl rollout restart deployment/organizapp-frontend -n grupo14`.
 
-Antes de usarlo en un despliegue real se deben reemplazar:
+Antes de usarlo en un despliegue real se debe confirmar:
 
 - Configurar permisos de Packages/GHCR para publicar la imagen.
-- Crear el secreto `KUBE_CONFIG` en GitHub Actions con el kubeconfig del cluster codificado en base64.
+- Que el runner self-hosted `main` este online y tenga acceso a MicroK8s.
 - Confirmar que el secret Kubernetes `ghcr-secret` exista en el namespace `grupo14`.
 
 ### deployment.yaml
@@ -174,7 +175,14 @@ El archivo `k8s/deployment.yaml` contiene la estructura Kubernetes indicada por 
 - `Service`
 - `Ingress`
 
-Usa `namespace: grupo14`, `name: organizapp-frontend`, imagen `ghcr.io/optimizapp/proyecto_organizapp_front:latest`, `containerPort: 80`, `imagePullSecrets: ghcr-secret`, `ingressClassName: nginx`, annotation `nginx.ingress.kubernetes.io/rewrite-target: /` y host `grupo14.inphotech.co`.
+Usa `namespace: grupo14`, `name: organizapp-frontend`, imagen `ghcr.io/optimizapp/proyecto_organizapp_front:latest`, `containerPort: 80`, `imagePullSecrets: ghcr-secret`, `ingressClassName: public` y host `grupo14.inphotech.co`.
+
+La regla de Ingress compartida con backend queda:
+
+| Ruta | Servicio Kubernetes |
+|---|---|
+| `/` | `organizapp-frontend:80` |
+| `/api` | `organizapp-backend:8080` |
 
 ### Build local
 

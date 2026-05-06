@@ -2,13 +2,12 @@ name: Deploy On Premise
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows:
-      - Frontend CI
+  push:
     branches:
       - main
-    types:
-      - completed
+  pull_request:
+    branches:
+      - main
 
 env:
   IMAGE_NAME: ghcr.io/optimizapp/proyecto_organizapp_front
@@ -18,10 +17,34 @@ permissions:
   packages: write
 
 jobs:
+  build-and-test:
+    name: Build and test Angular
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Angular
+        run: npm run build
+
+      - name: Test Angular
+        run: npm test -- --watch=false
+
   docker:
     name: Build and push Docker image
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    needs: build-and-test
+    if: ${{ github.event_name != 'pull_request' }}
 
     steps:
       - name: Checkout repository
@@ -42,28 +65,16 @@ jobs:
 
   deploy-on-premise:
     name: Deploy on premise
-    runs-on: ubuntu-latest
+    runs-on: main
     needs: docker
+    if: ${{ github.event_name != 'pull_request' }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Validate Kubernetes credentials
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-        run: |
-          if [ -z "$KUBE_CONFIG" ]; then
-            echo "Missing required GitHub secret: KUBE_CONFIG"
-            exit 1
-          fi
-
-      - name: Configure kubeconfig
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-        run: |
-          mkdir -p "$HOME/.kube"
-          echo "$KUBE_CONFIG" | base64 -d > "$HOME/.kube/config"
-
       - name: Apply Kubernetes deployment
-        run: kubectl apply -f k8s/deployment.yaml
+        run: sudo microk8s kubectl apply -f k8s/deployment.yaml
+
+      - name: Restart Kubernetes deployment
+        run: sudo microk8s kubectl rollout restart deployment/organizapp-frontend -n grupo14

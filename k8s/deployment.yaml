@@ -44,14 +44,19 @@ kind: Ingress
 metadata:
   name: organizapp-frontend
   namespace: grupo14
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
-  ingressClassName: nginx
+  ingressClassName: public
   rules:
     - host: grupo14.inphotech.co
       http:
         paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: organizapp-backend
+                port:
+                  number: 8080
           - path: /
             pathType: Prefix
             backend:
