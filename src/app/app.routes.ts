@@ -6,6 +6,7 @@ import { ProcessList } from './features/processes/process-list/process-list';
 import { ProcessDetail } from './features/processes/process-detail/process-detail';
 import { RoleList } from './features/roles/role-list/role-list';
 import { UserList } from './features/users/user-list/user-list';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'processes', pathMatch: 'full' },
@@ -15,5 +16,9 @@ export const routes: Routes = [
   { path: 'pools', component: PoolList },
   { path: 'lanes', component: LaneList },
   { path: 'processes', component: ProcessList },
-  { path: 'processes/:id', component: ProcessDetail }
+  { path: 'processes/:id', component: ProcessDetail },
+  {   
+    path: 'login', 
+    loadComponent: () => import('./features/auth/login/login.component').then(c => c.LoginComponent) 
+  }  
 ];
