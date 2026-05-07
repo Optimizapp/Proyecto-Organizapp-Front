@@ -1,0 +1,69 @@
+<div class="form-container">
+  <a routerLink="/processes" class="back-link">← Volver al listado</a>
+
+  <h2>{{ isEditMode ? 'Editar proceso' : 'Crear proceso' }}</h2>
+  <p class="subtitle">
+    Completa la información básica del proceso.
+  </p>
+
+  <div *ngIf="loading" class="info-message">
+    Cargando información del proceso...
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <form [formGroup]="processForm" (ngSubmit)="saveProcess()" *ngIf="!loading">
+    <div class="form-field">
+      <label for="name">Nombre del proceso</label>
+      <input
+        id="name"
+        type="text"
+        formControlName="name"
+        placeholder="Ej: Proceso de ventas"
+      />
+
+      <small *ngIf="isInvalid('name')">
+        El nombre es obligatorio y debe tener mínimo 3 caracteres.
+      </small>
+    </div>
+
+    <div class="form-field">
+      <label for="description">Descripción</label>
+      <textarea
+        id="description"
+        rows="4"
+        formControlName="description"
+        placeholder="Describe brevemente el proceso"
+      ></textarea>
+
+      <small *ngIf="isInvalid('description')">
+        La descripción es obligatoria y debe tener mínimo 5 caracteres.
+      </small>
+    </div>
+
+    <div class="form-field">
+      <label for="status">Estado</label>
+      <select id="status" formControlName="status">
+        <option value="Borrador">Borrador</option>
+        <option value="Activo">Activo</option>
+        <option value="Inactivo">Inactivo</option>
+      </select>
+
+      <small *ngIf="isInvalid('status')">
+        El estado es obligatorio.
+      </small>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit">
+        {{ isEditMode ? 'Actualizar proceso' : 'Crear proceso' }}
+      </button>
+
+      <button type="button" class="secondary" (click)="cancel()">
+        Cancelar
+      </button>
+    </div>
+  </form>
+</div>
