@@ -74,6 +74,16 @@ describe('ProcessList', () => {
     expect(component.filteredProcesses).toEqual([processes[0]]);
   });
 
+  it('should expose navigation links for creating, viewing and editing processes', async () => {
+    await createComponent();
+
+    const compiled: HTMLElement = fixture.nativeElement;
+
+    expect(compiled.textContent).toContain('Nuevo proceso');
+    expect(compiled.textContent).toContain('Ver detalle');
+    expect(compiled.textContent).toContain('Editar');
+  });
+
   it('should request processes with the selected status as backend query param', async () => {
     await createComponent(of([processes[0]]));
 
