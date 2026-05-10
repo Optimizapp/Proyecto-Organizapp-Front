@@ -2,9 +2,34 @@
   padding: 24px;
 }
 
+.header-actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.header-actions h2 {
+  margin-bottom: 8px;
+}
+
 .subtitle {
   color: #666;
-  margin-bottom: 20px;
+  margin: 0;
+}
+
+.primary-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 6px;
+  background: #1976d2;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
 .filters {
@@ -90,4 +115,10 @@
   text-decoration: none;
   color: #1976d2;
   font-weight: 500;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }

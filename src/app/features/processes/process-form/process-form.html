@@ -1,0 +1,72 @@
+<div class="form-container">
+  <a routerLink="/processes" class="back-link">Volver al listado</a>
+
+  <h2>{{ isEditMode ? 'Editar proceso' : 'Crear proceso' }}</h2>
+  <p class="subtitle">Completa la informacion basica del proceso.</p>
+
+  <p *ngIf="isLoading" class="info-message">Cargando informacion del proceso...</p>
+
+  <div *ngIf="error" class="error-message">
+    <p>{{ error }}</p>
+    <ul *ngIf="(fieldErrors | keyvalue).length > 0">
+      <li *ngFor="let fieldError of fieldErrors | keyvalue">
+        {{ fieldError.key }}: {{ fieldError.value }}
+      </li>
+    </ul>
+  </div>
+
+  <form [formGroup]="processForm" (ngSubmit)="saveProcess()" *ngIf="!isLoading">
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="name">Nombre</label>
+        <input id="name" type="text" formControlName="name" placeholder="Ej: Proceso de ventas" />
+        <small *ngIf="isInvalid('name')">El nombre es obligatorio.</small>
+      </div>
+
+      <div class="form-field">
+        <label for="status">Estado</label>
+        <select id="status" formControlName="status">
+          <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+        </select>
+        <small *ngIf="isInvalid('status')">El estado es obligatorio.</small>
+      </div>
+
+      <div class="form-field">
+        <label for="companyId">Empresa</label>
+        <input id="companyId" type="number" formControlName="companyId" min="1" />
+        <small *ngIf="isInvalid('companyId')">La empresa es obligatoria.</small>
+      </div>
+
+      <div class="form-field">
+        <label for="userId">Usuario responsable</label>
+        <input id="userId" type="number" formControlName="userId" min="1" />
+        <small *ngIf="isInvalid('userId')">El usuario responsable es obligatorio.</small>
+      </div>
+
+      <div class="form-field">
+        <label for="mainPoolId">Pool principal</label>
+        <input id="mainPoolId" type="number" formControlName="mainPoolId" min="1" />
+        <small *ngIf="isInvalid('mainPoolId')">El pool principal es obligatorio segun el contrato actual.</small>
+      </div>
+
+      <div class="form-field">
+        <label for="category">Categoria</label>
+        <input id="category" type="text" formControlName="category" placeholder="Ej: Operaciones" />
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label for="description">Descripcion</label>
+      <textarea id="description" rows="4" formControlName="description" placeholder="Describe brevemente el proceso"></textarea>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" [disabled]="isSubmitting">
+        {{ isEditMode ? 'Actualizar proceso' : 'Crear proceso' }}
+      </button>
+      <button type="button" class="secondary" (click)="cancel()" [disabled]="isSubmitting">
+        Cancelar
+      </button>
+    </div>
+  </form>
+</div>
