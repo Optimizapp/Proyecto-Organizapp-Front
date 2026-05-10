@@ -1,6 +1,6 @@
 .top-header {
   height: var(--header-height);
-  background-color: var(--bg-secondary);
+  background-color: var(--header-bg);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
@@ -83,4 +83,21 @@
 .username {
   font-weight: 500;
   color: var(--text-primary);
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .top-header {
+    padding: 0 1rem;
+  }
+
+  .username {
+    display: none;
+  }
+
+  .search-bar {
+    width: auto;
+    flex: 1;
+    margin-right: 1rem;
+  }
 }

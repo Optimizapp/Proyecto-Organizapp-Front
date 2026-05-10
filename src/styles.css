@@ -2,13 +2,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --bg-primary: #f0f2f5;
-  --bg-secondary: #ffffff;
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --accent-color: #6366f1;
-  --accent-hover: #4f46e5;
-  --border-color: #e2e8f0;
+  /* Requested Color Palette */
+  --color-light-beige: #f7ead9;
+  --color-sand: #e1d2a9;
+  --color-sage: #88b499;
+  --color-medium-green: #619885;
+  --color-dark-brown: #67594e;
+
+  /* App Variables */
+  --bg-primary: var(--color-light-beige);
+  --bg-secondary: #ffffff; /* Keeping white for cards to maintain clean look, or we could use very light version of beige */
+  --text-primary: var(--color-dark-brown);
+  --text-secondary: #8a7c71; /* Lighter shade of dark brown */
+  --accent-color: var(--color-medium-green);
+  --accent-hover: var(--color-sage);
+  --border-color: var(--color-sand);
+  
+  --sidebar-bg: var(--color-dark-brown);
+  --sidebar-text: var(--color-light-beige);
+  --sidebar-hover: rgba(247, 234, 217, 0.1); /* light beige with opacity */
+
+  --header-bg: #ffffff;
+
   --sidebar-width: 260px;
   --header-height: 70px;
   --footer-height: 60px;
@@ -62,4 +77,16 @@ body {
 
 .feature-page p {
   color: var(--text-secondary);
+}
+
+/* Responsive Layout Styles */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding-bottom: 70px; /* space for bottom nav */
+  }
+  
+  .content-area {
+    padding: 1rem;
+  }
 }
