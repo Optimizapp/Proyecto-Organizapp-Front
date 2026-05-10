@@ -1,4 +1,4 @@
-# ETAPA 1: Build de Angular
+# Armado de la imagen Angular para hosting tradicional con Nginx.
 FROM node:20-alpine AS build
 
 WORKDIR /app
@@ -9,12 +9,13 @@ RUN npm ci
 COPY . .
 RUN npm run build -- --configuration production
 
-# ETAPA 2: RUNTIME CON Nginx
 FROM nginx:1.27-alpine
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist/mi-primer-proyecto/browser /usr/share/nginx/html
 
-COPY --from=build /app/dist/mi-angular-app/browser /usr/share/nginx/html
+# Angular SSR genera index.csr.html en la salida browser; Nginx SPA espera index.html.
+RUN if [ -f /usr/share/nginx/html/index.csr.html ] && [ ! -f /usr/share/nginx/html/index.html ]; then cp /usr/share/nginx/html/index.csr.html /usr/share/nginx/html/index.html; fi
 
 EXPOSE 80
 

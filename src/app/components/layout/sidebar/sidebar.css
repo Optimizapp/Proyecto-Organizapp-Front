@@ -73,7 +73,8 @@
   color: var(--accent-color);
 }
 
-.nav-item.active .nav-link {
+.nav-item.active .nav-link,
+.nav-link.active-link {
   background-color: var(--accent-color);
   color: white;
   box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4);
