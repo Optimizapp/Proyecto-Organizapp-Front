@@ -55,6 +55,7 @@ describe('UserService', () => {
     const request: CreateUserRequest = {
       name: 'Admin',
       email: 'admin@optimizapp.com',
+      password: 'Segura123',
       companyId: 2,
       roleId: 3
     };

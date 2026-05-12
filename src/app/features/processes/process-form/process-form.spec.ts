@@ -147,6 +147,13 @@ describe('ProcessForm', () => {
     expect(component.users).toEqual(users);
   });
 
+  it('should start with dependent selects disabled', async () => {
+    await createComponent();
+
+    expect(component.processForm.controls.userId.disabled).toBe(true);
+    expect(component.processForm.controls.mainPoolId.disabled).toBe(true);
+  });
+
   it('should load pools and filter users when selecting a company', async () => {
     await createComponent();
 
@@ -162,6 +169,8 @@ describe('ProcessForm', () => {
     expect(component.filteredUsers).toEqual([users[0]]);
     expect(poolServiceMock.getPools).toHaveBeenCalledWith(1);
     expect(component.pools).toEqual(pools);
+    expect(component.processForm.controls.userId.enabled).toBe(true);
+    expect(component.processForm.controls.mainPoolId.enabled).toBe(true);
   });
 
   it('should call createProcess when the create form is valid', async () => {

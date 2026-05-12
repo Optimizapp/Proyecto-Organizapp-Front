@@ -1,11 +1,12 @@
 export interface CreateUserRequest {
   name: string;
   email: string;
+  password: string;
   companyId: number;
   roleId: number;
 }
 
-export interface UpdateUserRequest extends Partial<CreateUserRequest> {
+export interface UpdateUserRequest extends Partial<Omit<CreateUserRequest, 'password'>> {
   active?: boolean;
 }
 

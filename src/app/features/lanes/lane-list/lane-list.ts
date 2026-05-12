@@ -23,7 +23,7 @@ import { PoolService } from '../../../services/pool.service';
       <form [formGroup]="filterForm" class="toolbar">
         <label>
           Empresa
-          <select formControlName="companyId" (change)="onCompanyChange()" [disabled]="isLoadingCompanies">
+          <select formControlName="companyId" (change)="onCompanyChange()">
             <option [ngValue]="null">
               {{ isLoadingCompanies ? 'Cargando empresas...' : 'Seleccione una empresa' }}
             </option>
@@ -35,7 +35,7 @@ import { PoolService } from '../../../services/pool.service';
 
         <label>
           Pool
-          <select formControlName="poolId" (change)="onPoolChange()" [disabled]="isLoadingPools || !filterForm.controls.companyId.value">
+          <select formControlName="poolId" (change)="onPoolChange()">
             <option [ngValue]="null">
               {{ isLoadingPools ? 'Cargando pools...' : 'Seleccione un pool' }}
             </option>
@@ -176,7 +176,7 @@ export class LaneList implements OnInit {
 
   filterForm = this.formBuilder.group({
     companyId: [null as number | null, Validators.required],
-    poolId: [null as number | null, Validators.required]
+    poolId: [{ value: null as number | null, disabled: true }, Validators.required]
   });
 
   laneForm = this.formBuilder.group({
@@ -197,6 +197,7 @@ export class LaneList implements OnInit {
 
   onCompanyChange(): void {
     this.filterForm.patchValue({ poolId: null });
+    this.filterForm.controls.poolId.disable();
     this.pools = [];
     this.lanes = [];
     this.error = null;
@@ -256,9 +257,15 @@ export class LaneList implements OnInit {
 
   private loadCompanies(): void {
     this.isLoadingCompanies = true;
+    this.filterForm.controls.companyId.disable();
     this.companyService
       .getCompanies()
-      .pipe(finalize(() => (this.isLoadingCompanies = false)))
+      .pipe(
+        finalize(() => {
+          this.isLoadingCompanies = false;
+          this.filterForm.controls.companyId.enable();
+        })
+      )
       .subscribe({
         next: (companies) => {
           this.companies = companies;
@@ -269,15 +276,22 @@ export class LaneList implements OnInit {
 
   private loadPools(companyId: number): void {
     this.isLoadingPools = true;
+    this.filterForm.controls.poolId.disable();
     this.poolService
       .getPools(companyId)
-      .pipe(finalize(() => (this.isLoadingPools = false)))
+      .pipe(
+        finalize(() => {
+          this.isLoadingPools = false;
+        })
+      )
       .subscribe({
         next: (pools) => {
           this.pools = pools;
+          this.filterForm.controls.poolId.enable();
         },
         error: (error: unknown) => {
           this.pools = [];
+          this.filterForm.controls.poolId.disable();
           this.applyError(error);
         }
       });

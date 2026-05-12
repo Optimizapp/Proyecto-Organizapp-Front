@@ -26,7 +26,7 @@ import { PoolService } from '../../../services/pool.service';
       <form [formGroup]="filterForm" class="toolbar">
         <label>
           Empresa
-          <select formControlName="companyId" (change)="onCompanyChange()" [disabled]="isLoadingCompanies">
+          <select formControlName="companyId" (change)="onCompanyChange()">
             <option [ngValue]="null">
               {{ isLoadingCompanies ? 'Cargando empresas...' : 'Seleccione una empresa' }}
             </option>
@@ -181,9 +181,15 @@ export class PoolList implements OnInit {
 
   private loadCompanies(): void {
     this.isLoadingCompanies = true;
+    this.filterForm.controls.companyId.disable();
     this.companyService
       .getCompanies()
-      .pipe(finalize(() => (this.isLoadingCompanies = false)))
+      .pipe(
+        finalize(() => {
+          this.isLoadingCompanies = false;
+          this.filterForm.controls.companyId.enable();
+        })
+      )
       .subscribe({
         next: (companies) => {
           this.companies = companies;

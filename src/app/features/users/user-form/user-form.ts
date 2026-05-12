@@ -48,9 +48,16 @@ import { UserService } from '../../../services/user.service';
           <small *ngIf="fieldErrors['email']">{{ fieldErrors['email'] }}</small>
         </label>
 
+        <label *ngIf="!isEditMode">
+          Contraseña
+          <input type="password" formControlName="password" />
+          <small *ngIf="isInvalid('password')">La contraseña es obligatoria.</small>
+          <small *ngIf="fieldErrors['password']">{{ fieldErrors['password'] }}</small>
+        </label>
+
         <label>
           Empresa
-          <select formControlName="companyId" (change)="onCompanyChange()" [disabled]="isLoadingCompanies">
+          <select formControlName="companyId" (change)="onCompanyChange()">
             <option [ngValue]="null">
               {{ isLoadingCompanies ? 'Cargando empresas...' : 'Seleccione una empresa' }}
             </option>
@@ -63,7 +70,7 @@ import { UserService } from '../../../services/user.service';
 
         <label>
           Rol
-          <select formControlName="roleId" [disabled]="isLoadingRoles || !userForm.controls.companyId.value">
+          <select formControlName="roleId">
             <option [ngValue]="null">
               {{ isLoadingRoles ? 'Cargando roles...' : 'Seleccione un rol' }}
             </option>
@@ -180,8 +187,9 @@ export class UserForm implements OnInit {
   userForm = this.formBuilder.group({
     name: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
+    password: ['', Validators.required],
     companyId: [null as number | null, Validators.required],
-    roleId: [null as number | null, Validators.required],
+    roleId: [{ value: null as number | null, disabled: true }, Validators.required],
     active: [true]
   });
 
@@ -201,6 +209,8 @@ export class UserForm implements OnInit {
     if (Number.isFinite(id) && id > 0) {
       this.isEditMode = true;
       this.userId = id;
+      this.userForm.controls.password.clearValidators();
+      this.userForm.controls.password.updateValueAndValidity();
       this.loadUser(id);
     }
   }
@@ -208,6 +218,7 @@ export class UserForm implements OnInit {
   onCompanyChange(): void {
     this.userForm.patchValue({ roleId: null });
     delete this.fieldErrors['roleId'];
+    this.userForm.controls.roleId.disable();
 
     const companyId = this.getSelectedCompanyId();
     if (companyId) {
@@ -222,8 +233,10 @@ export class UserForm implements OnInit {
     this.error = null;
     this.fieldErrors = {};
 
-    if (this.userForm.invalid) {
+    if (this.userForm.invalid || !this.getSelectedRoleId()) {
       this.userForm.markAllAsTouched();
+      this.userForm.controls.roleId.enable();
+      this.userForm.controls.roleId.markAsTouched();
       return;
     }
 
@@ -272,6 +285,7 @@ export class UserForm implements OnInit {
           this.userForm.patchValue({
             name: user.name,
             email: user.email,
+            password: '',
             companyId: user.companyId,
             roleId: user.roleId,
             active: user.active
@@ -285,6 +299,7 @@ export class UserForm implements OnInit {
   private loadRoles(companyId: number, selectedRoleId?: number): void {
     this.isLoadingRoles = true;
     this.roles = [];
+    this.userForm.controls.roleId.disable();
 
     this.roleService
       .getRoles({ companyId })
@@ -292,11 +307,16 @@ export class UserForm implements OnInit {
       .subscribe({
         next: (roles) => {
           this.roles = roles;
+          this.userForm.controls.roleId.enable();
           if (selectedRoleId) {
             this.userForm.patchValue({ roleId: selectedRoleId });
           }
         },
-        error: (error: unknown) => this.applyError(error)
+        error: (error: unknown) => {
+          this.roles = [];
+          this.userForm.controls.roleId.disable();
+          this.applyError(error);
+        }
       });
   }
 
@@ -311,6 +331,11 @@ export class UserForm implements OnInit {
 
     if (this.isEditMode) {
       request.active = Boolean(value.active);
+    } else {
+      return {
+        ...request,
+        password: value.password ?? ''
+      } as CreateUserRequest;
     }
 
     return request;
@@ -319,6 +344,11 @@ export class UserForm implements OnInit {
   private getSelectedCompanyId(): number | null {
     const companyId = Number(this.userForm.controls.companyId.value);
     return Number.isFinite(companyId) && companyId > 0 ? companyId : null;
+  }
+
+  private getSelectedRoleId(): number | null {
+    const roleId = Number(this.userForm.getRawValue().roleId);
+    return Number.isFinite(roleId) && roleId > 0 ? roleId : null;
   }
 
   private applyError(error: unknown): void {

@@ -92,6 +92,12 @@ describe('UserForm', () => {
     expect(component.companies).toEqual(companies);
   });
 
+  it('should start with roleId disabled', async () => {
+    await createComponent();
+
+    expect(component.userForm.controls.roleId.disabled).toBe(true);
+  });
+
   it('should load roles when selecting a company', async () => {
     await createComponent();
 
@@ -102,7 +108,23 @@ describe('UserForm', () => {
     expect(component.userForm.value.roleId).toBeNull();
     expect(roleServiceMock.getRoles).toHaveBeenCalledWith({ companyId: 10 });
     expect(component.roles).toEqual(roles);
+    expect(component.userForm.controls.roleId.enabled).toBe(true);
     expect(fixture.nativeElement.textContent).toContain('ADMIN');
+  });
+
+  it('should disable roleId when clearing company', async () => {
+    await createComponent();
+
+    component.userForm.patchValue({ companyId: 10 });
+    component.onCompanyChange();
+    expect(component.userForm.controls.roleId.enabled).toBe(true);
+
+    component.userForm.patchValue({ companyId: null, roleId: 20 });
+    component.onCompanyChange();
+
+    expect(component.userForm.getRawValue().roleId).toBeNull();
+    expect(component.roles).toEqual([]);
+    expect(component.userForm.controls.roleId.disabled).toBe(true);
   });
 
   it('should not submit without roleId', async () => {
@@ -111,6 +133,7 @@ describe('UserForm', () => {
     component.userForm.setValue({
       name: 'Ana Gomez',
       email: 'ana@example.com',
+      password: '',
       companyId: 10,
       roleId: null,
       active: true
@@ -118,6 +141,7 @@ describe('UserForm', () => {
     component.saveUser();
 
     expect(component.userForm.invalid).toBe(true);
+    expect(component.userForm.controls.roleId.enabled).toBe(true);
     expect(userServiceMock.createUser).not.toHaveBeenCalled();
   });
 
@@ -129,7 +153,7 @@ describe('UserForm', () => {
     component.onCompanyChange();
 
     expect(component.roles).toEqual([]);
-    expect(component.userForm.value.roleId).toBeNull();
+    expect(component.userForm.getRawValue().roleId).toBeNull();
     expect(component.error).toBeTruthy();
   });
 
@@ -148,6 +172,7 @@ describe('UserForm', () => {
     component.userForm.setValue({
       name: 'Ana Gomez',
       email: 'ana@example.com',
+      password: 'Segura123',
       companyId: 10,
       roleId: 20,
       active: true
@@ -157,6 +182,7 @@ describe('UserForm', () => {
     expect(userServiceMock.createUser).toHaveBeenCalledWith({
       name: 'Ana Gomez',
       email: 'ana@example.com',
+      password: 'Segura123',
       companyId: 10,
       roleId: 20
     });
@@ -180,12 +206,46 @@ describe('UserForm', () => {
     });
   });
 
+  it('should require password in create mode', async () => {
+    await createComponent();
+
+    component.userForm.setValue({
+      name: 'Ana Gomez',
+      email: 'ana@example.com',
+      password: '',
+      companyId: 10,
+      roleId: 20,
+      active: true
+    });
+    component.saveUser();
+
+    expect(component.userForm.controls.password.invalid).toBe(true);
+    expect(userServiceMock.createUser).not.toHaveBeenCalled();
+  });
+
+  it('should not require or send password in edit mode', async () => {
+    await createComponent('1');
+
+    component.userForm.patchValue({ password: '', name: 'Ana Actualizada' });
+    component.saveUser();
+
+    expect(component.userForm.controls.password.valid).toBe(true);
+    expect(userServiceMock.updateUser).toHaveBeenCalledWith(1, {
+      name: 'Ana Actualizada',
+      email: 'ana@example.com',
+      companyId: 10,
+      roleId: 20,
+      active: true
+    });
+  });
+
   it('should handle backend errors', async () => {
     await createComponent();
     userServiceMock.createUser.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 400 })));
     component.userForm.setValue({
       name: 'Ana Gomez',
       email: 'ana@example.com',
+      password: 'Segura123',
       companyId: 10,
       roleId: 20,
       active: true
@@ -194,5 +254,39 @@ describe('UserForm', () => {
     component.saveUser();
 
     expect(component.error).toBeTruthy();
+  });
+
+  it('should expose password backend field errors', async () => {
+    await createComponent();
+    userServiceMock.createUser.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 400,
+            error: {
+              timestamp: '2026-05-12T00:00:00.000Z',
+              status: 400,
+              error: 'Bad Request',
+              message: 'Datos invalidos',
+              path: '/api/users',
+              fields: {
+                password: 'La contrasena es obligatoria'
+              }
+            }
+          })
+      )
+    );
+    component.userForm.setValue({
+      name: 'Ana Gomez',
+      email: 'ana@example.com',
+      password: 'Segura123',
+      companyId: 10,
+      roleId: 20,
+      active: true
+    });
+
+    component.saveUser();
+
+    expect(component.fieldErrors['password']).toBe('La contrasena es obligatoria');
   });
 });

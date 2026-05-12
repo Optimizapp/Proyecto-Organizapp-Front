@@ -33,7 +33,7 @@
 
       <div class="form-field">
         <label for="companyId">Empresa</label>
-        <select id="companyId" formControlName="companyId" (change)="onCompanyChange()" [disabled]="isLoadingCompanies">
+        <select id="companyId" formControlName="companyId" (change)="onCompanyChange()">
           <option [ngValue]="null">
             {{ isLoadingCompanies ? 'Cargando empresas...' : 'Seleccione una empresa' }}
           </option>
@@ -52,7 +52,6 @@
         <select
           id="userId"
           formControlName="userId"
-          [disabled]="isLoadingUsers || !processForm.controls.companyId.value"
         >
           <option [ngValue]="null">
             {{ isLoadingUsers ? 'Cargando usuarios...' : 'Seleccione un usuario' }}
@@ -72,7 +71,6 @@
         <select
           id="mainPoolId"
           formControlName="mainPoolId"
-          [disabled]="isLoadingPools || !processForm.controls.companyId.value"
         >
           <option [ngValue]="null">
             {{ isLoadingPools ? 'Cargando pools...' : 'Seleccione un pool' }}

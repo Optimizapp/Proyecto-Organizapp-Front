@@ -44,8 +44,8 @@ export class ProcessForm implements OnInit {
     category: [''],
     status: ['DRAFT' as ProcessStatus, Validators.required],
     companyId: [null as number | null, [Validators.required, Validators.min(1)]],
-    userId: [null as number | null, [Validators.required, Validators.min(1)]],
-    mainPoolId: [null as number | null, [Validators.required, Validators.min(1)]]
+    userId: [{ value: null as number | null, disabled: true }, [Validators.required, Validators.min(1)]],
+    mainPoolId: [{ value: null as number | null, disabled: true }, [Validators.required, Validators.min(1)]]
   });
 
   constructor(
@@ -83,8 +83,12 @@ export class ProcessForm implements OnInit {
     this.error = null;
     this.fieldErrors = {};
 
-    if (this.processForm.invalid) {
+    if (this.processForm.invalid || !this.getSelectedUserId() || !this.getSelectedPoolId()) {
       this.processForm.markAllAsTouched();
+      this.processForm.controls.userId.enable();
+      this.processForm.controls.mainPoolId.enable();
+      this.processForm.controls.userId.markAsTouched();
+      this.processForm.controls.mainPoolId.markAsTouched();
       return;
     }
 
@@ -117,6 +121,8 @@ export class ProcessForm implements OnInit {
       userId: null,
       mainPoolId: null
     });
+    this.processForm.controls.userId.disable();
+    this.processForm.controls.mainPoolId.disable();
     delete this.fieldErrors['userId'];
     delete this.fieldErrors['mainPoolId'];
 
@@ -124,6 +130,7 @@ export class ProcessForm implements OnInit {
     this.filterUsersByCompany(companyId);
 
     if (companyId) {
+      this.updateUserControlState();
       this.loadPools(companyId);
       return;
     }
@@ -172,10 +179,12 @@ export class ProcessForm implements OnInit {
         next: (users) => {
           this.users = users;
           this.filterUsersByCompany(this.getSelectedCompanyId());
+          this.updateUserControlState();
         },
         error: (error: unknown) => {
           this.users = [];
           this.filteredUsers = [];
+          this.processForm.controls.userId.disable();
           this.error = this.apiErrorService.getMessage(error);
           this.fieldErrors = this.apiErrorService.getFieldErrors(error);
         }
@@ -202,6 +211,7 @@ export class ProcessForm implements OnInit {
             mainPoolId: process.mainPoolId
           });
           this.filterUsersByCompany(process.companyId);
+          this.updateUserControlState();
           this.loadPools(process.companyId, process.mainPoolId);
         },
         error: (error: unknown) => {
@@ -214,6 +224,7 @@ export class ProcessForm implements OnInit {
   private loadPools(companyId: number, selectedPoolId?: number): void {
     this.isLoadingPools = true;
     this.pools = [];
+    this.processForm.controls.mainPoolId.disable();
 
     this.poolService
       .getPools(companyId)
@@ -221,6 +232,7 @@ export class ProcessForm implements OnInit {
       .subscribe({
         next: (pools) => {
           this.pools = pools;
+          this.processForm.controls.mainPoolId.enable();
 
           if (selectedPoolId) {
             this.processForm.patchValue({ mainPoolId: selectedPoolId });
@@ -228,6 +240,7 @@ export class ProcessForm implements OnInit {
         },
         error: (error: unknown) => {
           this.pools = [];
+          this.processForm.controls.mainPoolId.disable();
           this.error = this.apiErrorService.getMessage(error);
           this.fieldErrors = this.apiErrorService.getFieldErrors(error);
         }
@@ -253,9 +266,28 @@ export class ProcessForm implements OnInit {
     return Number.isFinite(companyId) && companyId > 0 ? companyId : null;
   }
 
+  private getSelectedUserId(): number | null {
+    const userId = Number(this.processForm.getRawValue().userId);
+    return Number.isFinite(userId) && userId > 0 ? userId : null;
+  }
+
+  private getSelectedPoolId(): number | null {
+    const poolId = Number(this.processForm.getRawValue().mainPoolId);
+    return Number.isFinite(poolId) && poolId > 0 ? poolId : null;
+  }
+
   private filterUsersByCompany(companyId: number | null): void {
     this.filteredUsers = companyId
       ? this.users.filter((user) => user.companyId === companyId)
       : [];
+  }
+
+  private updateUserControlState(): void {
+    if (this.getSelectedCompanyId() && !this.isLoadingUsers) {
+      this.processForm.controls.userId.enable();
+      return;
+    }
+
+    this.processForm.controls.userId.disable();
   }
 }
