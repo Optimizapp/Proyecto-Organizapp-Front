@@ -5,6 +5,10 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { ApiErrorService } from '../../../core/services/api-error.service';
+import { CompanyResponse, PoolResponse, UserResponse } from '../../../core/models';
+import { CompanyService } from '../../../services/company.service';
+import { PoolService } from '../../../services/pool.service';
+import { UserService } from '../../../services/user.service';
 import { CreateProcessRequest, ProcessStatus, UpdateProcessRequest } from '../models/process.model';
 import { ProcessService } from '../process.service';
 
@@ -24,8 +28,15 @@ export class ProcessForm implements OnInit {
   isEditMode = false;
   isLoading = false;
   isSubmitting = false;
+  isLoadingCompanies = false;
+  isLoadingUsers = false;
+  isLoadingPools = false;
   error: string | null = null;
   fieldErrors: Record<string, string> = {};
+  companies: CompanyResponse[] = [];
+  users: UserResponse[] = [];
+  filteredUsers: UserResponse[] = [];
+  pools: PoolResponse[] = [];
 
   processForm = this.formBuilder.group({
     name: ['', Validators.required],
@@ -41,10 +52,16 @@ export class ProcessForm implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private processService: ProcessService,
+    private companyService: CompanyService,
+    private userService: UserService,
+    private poolService: PoolService,
     private apiErrorService: ApiErrorService
   ) {}
 
   ngOnInit(): void {
+    this.loadCompanies();
+    this.loadUsers();
+
     const idParam = this.route.snapshot.paramMap.get('id');
     const id = Number(idParam);
 
@@ -95,9 +112,74 @@ export class ProcessForm implements OnInit {
     this.router.navigate(['/processes']);
   }
 
+  onCompanyChange(): void {
+    this.processForm.patchValue({
+      userId: null,
+      mainPoolId: null
+    });
+    delete this.fieldErrors['userId'];
+    delete this.fieldErrors['mainPoolId'];
+
+    const companyId = this.getSelectedCompanyId();
+    this.filterUsersByCompany(companyId);
+
+    if (companyId) {
+      this.loadPools(companyId);
+      return;
+    }
+
+    this.pools = [];
+  }
+
   isInvalid(fieldName: keyof typeof this.processForm.controls): boolean {
     const field = this.processForm.controls[fieldName];
     return field.invalid && (field.dirty || field.touched);
+  }
+
+  getCompanyLabel(company: CompanyResponse): string {
+    return company.nit ? `${company.name} - ${company.nit}` : company.name;
+  }
+
+  getUserLabel(user: UserResponse): string {
+    return user.email ? `${user.name} - ${user.email}` : user.name;
+  }
+
+  private loadCompanies(): void {
+    this.isLoadingCompanies = true;
+
+    this.companyService
+      .getCompanies()
+      .pipe(finalize(() => (this.isLoadingCompanies = false)))
+      .subscribe({
+        next: (companies) => {
+          this.companies = companies;
+        },
+        error: (error: unknown) => {
+          this.companies = [];
+          this.error = this.apiErrorService.getMessage(error);
+          this.fieldErrors = this.apiErrorService.getFieldErrors(error);
+        }
+      });
+  }
+
+  private loadUsers(): void {
+    this.isLoadingUsers = true;
+
+    this.userService
+      .getUsers()
+      .pipe(finalize(() => (this.isLoadingUsers = false)))
+      .subscribe({
+        next: (users) => {
+          this.users = users;
+          this.filterUsersByCompany(this.getSelectedCompanyId());
+        },
+        error: (error: unknown) => {
+          this.users = [];
+          this.filteredUsers = [];
+          this.error = this.apiErrorService.getMessage(error);
+          this.fieldErrors = this.apiErrorService.getFieldErrors(error);
+        }
+      });
   }
 
   private loadProcess(id: number): void {
@@ -119,8 +201,33 @@ export class ProcessForm implements OnInit {
             userId: process.userId,
             mainPoolId: process.mainPoolId
           });
+          this.filterUsersByCompany(process.companyId);
+          this.loadPools(process.companyId, process.mainPoolId);
         },
         error: (error: unknown) => {
+          this.error = this.apiErrorService.getMessage(error);
+          this.fieldErrors = this.apiErrorService.getFieldErrors(error);
+        }
+      });
+  }
+
+  private loadPools(companyId: number, selectedPoolId?: number): void {
+    this.isLoadingPools = true;
+    this.pools = [];
+
+    this.poolService
+      .getPools(companyId)
+      .pipe(finalize(() => (this.isLoadingPools = false)))
+      .subscribe({
+        next: (pools) => {
+          this.pools = pools;
+
+          if (selectedPoolId) {
+            this.processForm.patchValue({ mainPoolId: selectedPoolId });
+          }
+        },
+        error: (error: unknown) => {
+          this.pools = [];
           this.error = this.apiErrorService.getMessage(error);
           this.fieldErrors = this.apiErrorService.getFieldErrors(error);
         }
@@ -139,5 +246,16 @@ export class ProcessForm implements OnInit {
       userId: Number(value.userId),
       mainPoolId: Number(value.mainPoolId)
     };
+  }
+
+  private getSelectedCompanyId(): number | null {
+    const companyId = Number(this.processForm.controls.companyId.value);
+    return Number.isFinite(companyId) && companyId > 0 ? companyId : null;
+  }
+
+  private filterUsersByCompany(companyId: number | null): void {
+    this.filteredUsers = companyId
+      ? this.users.filter((user) => user.companyId === companyId)
+      : [];
   }
 }
