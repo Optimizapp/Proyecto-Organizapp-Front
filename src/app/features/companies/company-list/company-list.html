@@ -1,0 +1,67 @@
+<section class="feature-page">
+  <div class="page-header">
+    <div>
+      <h2>Empresas</h2>
+      <p>Gestiona y consulta el directorio de empresas registradas.</p>
+    </div>
+
+    <a class="btn-primary" routerLink="/companies/new">
+      <span class="plus-icon">+</span>
+      Nueva empresa
+    </a>
+  </div>
+
+  <p *ngIf="isLoading" class="info-message">Cargando empresas...</p>
+
+  <div *ngIf="error" class="error-message">
+    <p>{{ error }}</p>
+    <ul *ngIf="(fieldErrors | keyvalue).length > 0">
+      <li *ngFor="let fieldError of fieldErrors | keyvalue">
+        {{ fieldError.key }}: {{ fieldError.value }}
+      </li>
+    </ul>
+  </div>
+
+  <div class="table-container" *ngIf="!isLoading && !error && companies.length > 0; else emptyState">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Empresa</th>
+          <th>NIT</th>
+          <th>Telefono</th>
+          <th>Direccion</th>
+          <th>Industria</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let company of companies">
+          <td>
+            <div class="company-info">
+              <div class="company-avatar">{{ getInitial(company) }}</div>
+              <div class="company-details">
+                <span class="company-name">{{ company.name }}</span>
+                <span class="company-id">ID: {{ company.id }}</span>
+              </div>
+            </div>
+          </td>
+          <td>{{ company.nit }}</td>
+          <td>{{ company.phone || 'Sin telefono' }}</td>
+          <td>{{ company.address || 'Sin direccion' }}</td>
+          <td>{{ company.industry || 'Sin industria' }}</td>
+          <td>
+            <div class="actions">
+              <a class="btn-link" [routerLink]="['/companies', company.id, 'edit']">Editar</a>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-template #emptyState>
+    <p *ngIf="!isLoading && !error" class="empty-message">
+      No hay empresas registradas para mostrar.
+    </p>
+  </ng-template>
+</section>

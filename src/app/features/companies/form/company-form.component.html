@@ -1,33 +1,59 @@
-<div class="container">
-  <h2>{{ isEditMode ? 'Editar' : 'Nueva' }} Empresa</h2>
+<section class="feature-page form-page">
+  <a routerLink="/companies" class="back-link">Volver al listado</a>
 
-  <form [formGroup]="companyForm" (ngSubmit)="onSubmit()">
-    <div class="form-group">
-      <label>Nombre de la Empresa</label>
-      <input formControlName="name" type="text" [class.is-invalid]="companyForm.get('name')?.invalid && companyForm.get('name')?.touched">
-      <small *ngIf="companyForm.get('name')?.invalid && companyForm.get('name')?.touched" class="error-text">
-        El nombre es obligatorio (mín. 3 caracteres).
-      </small>
+  <h2>{{ isEditMode ? 'Editar empresa' : 'Nueva empresa' }}</h2>
+  <p class="subtitle">Completa la informacion registrada para la empresa.</p>
+
+  <p *ngIf="isLoading" class="info-message">Cargando informacion de la empresa...</p>
+
+  <div *ngIf="error" class="error-message">
+    <p>{{ error }}</p>
+    <ul *ngIf="(fieldErrors | keyvalue).length > 0">
+      <li *ngFor="let fieldError of fieldErrors | keyvalue">
+        {{ fieldError.key }}: {{ fieldError.value }}
+      </li>
+    </ul>
+  </div>
+
+  <form [formGroup]="companyForm" (ngSubmit)="saveCompany()" *ngIf="!isLoading">
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="name">Nombre</label>
+        <input id="name" type="text" formControlName="name" placeholder="Ej: Acme S.A.S." />
+        <small *ngIf="isInvalid('name')">El nombre es obligatorio y debe tener minimo 3 caracteres.</small>
+      </div>
+
+      <div class="form-field">
+        <label for="nit">NIT</label>
+        <input id="nit" type="text" formControlName="nit" placeholder="Ej: 900123456-7" />
+        <small *ngIf="isInvalid('nit')">El NIT es obligatorio.</small>
+      </div>
+
+      <div class="form-field">
+        <label for="phone">Telefono</label>
+        <input id="phone" type="text" formControlName="phone" placeholder="Ej: 3001234567" />
+        <small *ngIf="isInvalid('phone')">El telefono es obligatorio.</small>
+      </div>
+
+      <div class="form-field">
+        <label for="industry">Industria</label>
+        <input id="industry" type="text" formControlName="industry" placeholder="Ej: Tecnologia" />
+      </div>
     </div>
 
-    <div class="form-group">
-      <label>NIT</label>
-      <input formControlName="nit" type="text">
+    <div class="form-field">
+      <label for="address">Direccion</label>
+      <input id="address" type="text" formControlName="address" placeholder="Ej: Calle 100 # 10-20" />
+      <small *ngIf="isInvalid('address')">La direccion es obligatoria.</small>
     </div>
 
-    <div class="form-group">
-      <label>Dirección</label>
-      <input formControlName="address" type="text">
-    </div>
-
-    <div class="form-group">
-      <label>Teléfono</label>
-      <input formControlName="phone" type="text">
-    </div>
-
-    <div class="actions">
-      <button type="submit" [disabled]="companyForm.invalid" class="btn-save">Guardar</button>
-      <button type="button" (click)="onSubmit()" class="btn-cancel">Cancelar</button>
+    <div class="form-actions">
+      <button type="submit" [disabled]="isSaving">
+        {{ isEditMode ? 'Actualizar empresa' : 'Crear empresa' }}
+      </button>
+      <button type="button" class="secondary" (click)="cancel()" [disabled]="isSaving">
+        Cancelar
+      </button>
     </div>
   </form>
-</div>
+</section>

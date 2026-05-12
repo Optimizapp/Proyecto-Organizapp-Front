@@ -1,11 +1,12 @@
 .top-header {
   height: var(--header-height);
-  background-color: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-glass);
   display: flex;
   align-items: center;
-  padding: 0 2rem;
-  box-shadow: var(--shadow-sm);
+  padding: 0 2.5rem;
   z-index: 10;
 }
 
@@ -19,20 +20,26 @@
 .search-bar {
   display: flex;
   align-items: center;
-  background-color: var(--bg-primary);
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
-  width: 300px;
-  transition: box-shadow 0.2s;
+  background-color: var(--bg-secondary);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 1.25rem;
+  width: 350px;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 .search-bar:focus-within {
-  box-shadow: 0 0 0 2px var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(67, 24, 255, 0.2);
+  border-color: var(--accent-color);
+  width: 400px;
 }
 
 .search-icon {
-  margin-right: 0.5rem;
+  margin-right: 0.75rem;
   color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .search-bar input {
@@ -41,13 +48,27 @@
   outline: none;
   width: 100%;
   font-family: inherit;
+  font-size: 0.95rem;
   color: var(--text-primary);
+}
+
+.search-bar input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
 }
 
 .user-profile {
   display: flex;
   align-items: center;
   gap: 1.5rem;
+  padding: 0.5rem;
+  border-radius: var(--radius-lg);
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.user-profile:hover {
+  background: rgba(0,0,0,0.02);
 }
 
 .notification-bell {
@@ -69,18 +90,21 @@
 }
 
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background-color: var(--accent-color);
+  background: var(--accent-gradient);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
+  font-weight: 700;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 10px rgba(67, 24, 255, 0.3);
 }
 
 .username {
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-primary);
+  font-size: 0.95rem;
 }

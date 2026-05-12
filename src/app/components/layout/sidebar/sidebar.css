@@ -1,15 +1,17 @@
 .sidebar {
   width: var(--sidebar-width);
   height: 100vh;
-  background-color: var(--bg-secondary);
-  border-right: 1px solid var(--border-color);
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid var(--border-glass);
   position: fixed;
   left: 0;
   top: 0;
   display: flex;
   flex-direction: column;
   z-index: 20;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
   transition: width var(--transition-speed) ease;
 }
 
@@ -17,8 +19,8 @@
   height: var(--header-height);
   display: flex;
   align-items: center;
-  padding: 0 1.5rem;
-  border-bottom: 1px solid var(--border-color);
+  padding: 0 2rem;
+  border-bottom: 1px solid var(--border-glass);
 }
 
 .logo {
@@ -28,18 +30,22 @@
 }
 
 .logo-icon {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--accent-color);
 }
 
 .logo h2 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--accent-color);
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   letter-spacing: -0.5px;
 }
 
 .sidebar-nav {
-  padding: 1.5rem 1rem;
+  padding: 2rem 1.5rem;
   flex: 1;
   overflow-y: auto;
 }
@@ -52,34 +58,40 @@
 }
 
 .nav-item {
-  border-radius: 8px;
-  transition: background-color 0.2s ease;
+  border-radius: var(--radius-md);
+  transition: all 0.3s ease;
 }
 
 .nav-link {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.75rem 1rem;
+  padding: 1rem 1.25rem;
   text-decoration: none;
   color: var(--text-secondary);
-  font-weight: 500;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  font-weight: 600;
+  font-size: 1.05rem;
+  border-radius: var(--radius-md);
+  transition: all 0.3s ease;
 }
 
 .nav-link:hover {
-  background-color: var(--bg-primary);
+  background: rgba(67, 24, 255, 0.05);
   color: var(--accent-color);
+  transform: translateX(5px);
 }
 
 .nav-item.active .nav-link,
 .nav-link.active-link {
-  background-color: var(--accent-color);
+  background: var(--accent-gradient);
   color: white;
-  box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 15px rgba(67, 24, 255, 0.2);
 }
 
 .icon {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
 }
