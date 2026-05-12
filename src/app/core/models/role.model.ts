@@ -3,7 +3,7 @@ export const BASE_ROLE_NAMES = ['ADMIN', 'MANAGER', 'USER'] as const;
 export type BaseRoleName = (typeof BASE_ROLE_NAMES)[number];
 
 export interface RoleRequest {
-  name: string;
+  nombre: string;
   companyId?: number;
   processId?: number | null;
 }

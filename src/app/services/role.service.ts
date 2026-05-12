@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { RoleRequest, RoleResponse } from '../core/models';
 
@@ -27,18 +28,45 @@ export class RoleService {
       params = params.set('processId', filters.processId);
     }
 
-    return this.http.get<RoleResponse[]>(this.apiUrl, { params });
+    return this.http
+      .get<BackendRoleResponse[]>(this.apiUrl, { params })
+      .pipe(map((roles) => roles.map((role) => this.mapRoleResponse(role))));
   }
 
   createRole(request: RoleRequest): Observable<RoleResponse> {
-    return this.http.post<RoleResponse>(this.apiUrl, request);
+    return this.http
+      .post<BackendRoleResponse>(this.apiUrl, request)
+      .pipe(map((role) => this.mapRoleResponse(role)));
   }
 
   updateRole(id: number, request: RoleRequest): Observable<RoleResponse> {
-    return this.http.put<RoleResponse>(`${this.apiUrl}/${id}`, request);
+    return this.http
+      .put<BackendRoleResponse>(`${this.apiUrl}/${id}`, request)
+      .pipe(map((role) => this.mapRoleResponse(role)));
   }
 
   deleteRole(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  private mapRoleResponse(role: BackendRoleResponse): RoleResponse {
+    return {
+      id: role.id,
+      name: role.name ?? role.nombre ?? '',
+      companyId: role.companyId,
+      processId: role.processId ?? null,
+      createdAt: role.createdAt,
+      updatedAt: role.updatedAt
+    };
+  }
+}
+
+interface BackendRoleResponse {
+  id: number;
+  name?: string;
+  nombre?: string;
+  companyId?: number;
+  processId?: number | null;
+  createdAt?: string;
+  updatedAt?: string;
 }

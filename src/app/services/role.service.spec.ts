@@ -58,7 +58,7 @@ describe('RoleService', () => {
 
   it('should create a role', () => {
     const request: RoleRequest = {
-      name: 'MANAGER',
+      nombre: 'MANAGER',
       companyId: 7,
       processId: 3
     };
@@ -75,7 +75,7 @@ describe('RoleService', () => {
 
   it('should update a role', () => {
     const request: RoleRequest = {
-      name: 'OWNER',
+      nombre: 'OWNER',
       companyId: 7,
       processId: 3
     };
@@ -89,6 +89,15 @@ describe('RoleService', () => {
     expect(req.request.method).toBe('PUT');
     expect(req.request.body).toEqual(request);
     req.flush(response);
+  });
+
+  it('should map backend nombre field to name', () => {
+    service.createRole({ nombre: 'ADMIN', companyId: 7, processId: null }).subscribe((result) => {
+      expect(result.name).toBe('ADMIN');
+    });
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/roles`);
+    req.flush({ id: 2, nombre: 'ADMIN', companyId: 7, processId: null });
   });
 
   it('should delete a role', () => {

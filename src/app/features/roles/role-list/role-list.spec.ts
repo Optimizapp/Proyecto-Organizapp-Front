@@ -78,10 +78,54 @@ describe('RoleList', () => {
     component.createRole();
 
     expect(roleServiceMock.createRole).toHaveBeenCalledWith({
-      name: 'MANAGER',
+      nombre: 'MANAGER',
       companyId: 10,
       processId: null
     });
+  });
+
+  it('should not create a role without company or name', async () => {
+    await createComponent();
+
+    component.createRole();
+
+    expect(component.roleForm.invalid).toBe(true);
+    expect(roleServiceMock.createRole).not.toHaveBeenCalled();
+  });
+
+  it('should reset saving state and expose create errors', async () => {
+    await createComponent();
+    roleServiceMock.createRole.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 400,
+            error: {
+              timestamp: '2026-05-12T00:00:00.000Z',
+              status: 400,
+              error: 'Bad Request',
+              message: 'Datos invalidos',
+              path: '/api/roles',
+              fields: {
+                nombre: 'El nombre del rol es obligatorio'
+              }
+            }
+          })
+      )
+    );
+
+    component.filterForm.patchValue({ companyId: '10' as unknown as number });
+    component.roleForm.patchValue({ name: 'MANAGER' });
+    component.createRole();
+
+    expect(roleServiceMock.createRole).toHaveBeenCalledWith({
+      nombre: 'MANAGER',
+      companyId: 10,
+      processId: null
+    });
+    expect(component.isSaving).toBe(false);
+    expect(component.error).toBe('Datos invalidos');
+    expect(component.fieldErrors['name']).toBe('El nombre del rol es obligatorio');
   });
 
   it('should handle backend errors', async () => {
