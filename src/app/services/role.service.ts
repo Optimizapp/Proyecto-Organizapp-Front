@@ -29,8 +29,8 @@ export class RoleService {
     }
 
     return this.http
-      .get<BackendRoleResponse[]>(this.apiUrl, { params })
-      .pipe(map((roles) => roles.map((role) => this.mapRoleResponse(role))));
+      .get<BackendRoleListResponse>(this.apiUrl, { params })
+      .pipe(map((response) => this.normalizeRolesResponse(response).map((role) => this.mapRoleResponse(role))));
   }
 
   createRole(request: RoleRequest): Observable<RoleResponse> {
@@ -59,7 +59,13 @@ export class RoleService {
       updatedAt: role.updatedAt
     };
   }
+
+  private normalizeRolesResponse(response: BackendRoleListResponse): BackendRoleResponse[] {
+    return Array.isArray(response) ? response : response.value ?? [];
+  }
 }
+
+type BackendRoleListResponse = BackendRoleResponse[] | { value?: BackendRoleResponse[] };
 
 interface BackendRoleResponse {
   id: number;
