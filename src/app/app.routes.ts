@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { CompanyList } from './features/companies/company-list/company-list';
+import { CompanyFormComponent } from './features/companies/form/company-form.component';
 import { LaneList } from './features/lanes/lane-list/lane-list';
 import { PoolList } from './features/pools/pool-list/pool-list';
 import { ProcessList } from './features/processes/process-list/process-list';
@@ -12,6 +13,8 @@ import { authGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
   { path: '', redirectTo: 'processes', pathMatch: 'full' },
   { path: 'companies', component: CompanyList },
+  { path: 'companies/new', component: CompanyFormComponent },
+  { path: 'companies/:id/edit', component: CompanyFormComponent },
   { path: 'users', component: UserList },
   { path: 'roles', component: RoleList },
   { path: 'pools', component: PoolList },

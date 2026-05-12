@@ -1,13 +1,10 @@
 .login-wrapper {
-  height: 100vh;
-  width: 100vw;
+  min-height: calc(100vh - var(--header-height) - var(--footer-height) - 5rem);
+  width: 100%;
   display: flex;
   background-color: var(--bg-primary);
-  margin: -2.5rem; /* Negate padding from any parent if needed, though this might be inside app.html -> router-outlet? Wait, login should take full screen */
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1000; /* Ensure it covers everything if inside a layout */
+  border-radius: var(--radius-lg);
+  overflow: hidden;
 }
 
 .login-split-layout {
@@ -71,7 +68,7 @@
   font-weight: 800;
   margin-bottom: 1rem;
   line-height: 1.1;
-  letter-spacing: -1px;
+  letter-spacing: 0;
 }
 
 .visual-content p {
@@ -81,63 +78,19 @@
   margin-bottom: 3rem;
 }
 
-.floating-cards {
-  position: relative;
-  height: 200px;
-}
-
-.glass-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-md);
-  padding: 1.5rem;
-  position: absolute;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-  animation: float 6s ease-in-out infinite;
-}
-
-.card-1 {
-  width: 250px;
-  top: 0;
-  left: 0;
-}
-
-.card-2 {
-  width: 200px;
-  top: 60px;
-  right: 20px;
-  animation-delay: -3s;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
-}
-
-.card-header {
+.login-highlights {
   display: flex;
-  gap: 5px;
-  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.4);
+.login-highlights span {
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  font-weight: 700;
+  padding: 0.65rem 1rem;
 }
-
-.mockup-line {
-  height: 8px;
-  background: rgba(255,255,255,0.2);
-  border-radius: 4px;
-  margin-bottom: 0.75rem;
-}
-
-.mockup-line.short { width: 60%; }
-.mockup-line.thick { height: 12px; margin-bottom: 1rem; }
 
 .login-form-container {
   flex: 1;
@@ -174,7 +127,7 @@
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 0.5rem;
-  letter-spacing: -0.5px;
+  letter-spacing: 0;
 }
 
 .subtitle {

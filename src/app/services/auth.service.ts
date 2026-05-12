@@ -3,12 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common'; // Fundamental para SSR
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { AuthResponse, LoginRequest } from '../models/auth.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api/auth';
+  private apiUrl = `${environment.apiUrl}/auth`;
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID); // Inyectamos el ID de la plataforma
 
