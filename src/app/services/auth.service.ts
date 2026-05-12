@@ -55,4 +55,12 @@ export class AuthService {
   getToken(): string | null {
     return this.tokenSubject.value;
   }
+
+  getUsersRole(): string | null {
+    if (isPlatformBrowser(this.platformId)) {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      return user.role || null;
+    }
+    return null;
+  }
 }
