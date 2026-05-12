@@ -95,12 +95,42 @@ describe('UserForm', () => {
   it('should load roles when selecting a company', async () => {
     await createComponent();
 
-    component.userForm.patchValue({ companyId: 10, roleId: 20 });
+    component.userForm.patchValue({ companyId: '10' as unknown as number, roleId: 20 });
     component.onCompanyChange();
+    fixture.detectChanges();
 
     expect(component.userForm.value.roleId).toBeNull();
     expect(roleServiceMock.getRoles).toHaveBeenCalledWith({ companyId: 10 });
     expect(component.roles).toEqual(roles);
+    expect(fixture.nativeElement.textContent).toContain('ADMIN');
+  });
+
+  it('should not submit without roleId', async () => {
+    await createComponent();
+
+    component.userForm.setValue({
+      name: 'Ana Gomez',
+      email: 'ana@example.com',
+      companyId: 10,
+      roleId: null,
+      active: true
+    });
+    component.saveUser();
+
+    expect(component.userForm.invalid).toBe(true);
+    expect(userServiceMock.createUser).not.toHaveBeenCalled();
+  });
+
+  it('should expose role loading errors', async () => {
+    await createComponent();
+    roleServiceMock.getRoles.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+
+    component.userForm.patchValue({ companyId: 10, roleId: 20 });
+    component.onCompanyChange();
+
+    expect(component.roles).toEqual([]);
+    expect(component.userForm.value.roleId).toBeNull();
+    expect(component.error).toBeTruthy();
   });
 
   it('should not submit an invalid form', async () => {

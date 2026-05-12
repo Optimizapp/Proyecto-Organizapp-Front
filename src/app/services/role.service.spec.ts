@@ -42,6 +42,31 @@ describe('RoleService', () => {
     req.flush([role]);
   });
 
+  it('should map backend nombre field when getting roles', () => {
+    service.getRoles({ companyId: 7 }).subscribe((roles) => {
+      expect(roles).toEqual([{ id: 2, name: 'AUDITOR', companyId: 7, processId: null }]);
+    });
+
+    const req = httpMock.expectOne((request) =>
+      request.url === `${environment.apiUrl}/roles` &&
+      request.params.get('companyId') === '7'
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush([{ id: 2, nombre: 'AUDITOR', companyId: 7, processId: null }]);
+  });
+
+  it('should support wrapped role lists', () => {
+    service.getRoles({ companyId: 7 }).subscribe((roles) => {
+      expect(roles).toEqual([{ id: 3, name: 'OWNER', companyId: 7, processId: null }]);
+    });
+
+    const req = httpMock.expectOne((request) =>
+      request.url === `${environment.apiUrl}/roles` &&
+      request.params.get('companyId') === '7'
+    );
+    req.flush({ value: [{ id: 3, nombre: 'OWNER', companyId: 7, processId: null }] });
+  });
+
   it('should get roles using companyId and processId query params', () => {
     service.getRoles({ companyId: 7, processId: 3 }).subscribe((roles) => {
       expect(roles).toEqual([role]);
