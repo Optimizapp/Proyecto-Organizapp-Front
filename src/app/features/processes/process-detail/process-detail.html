@@ -1,26 +1,85 @@
-<p *ngIf="isLoading">Cargando...</p>
-
-<p *ngIf="error">{{ error }}</p>
-<ul *ngIf="(fieldErrors | keyvalue).length > 0">
-  <li *ngFor="let fieldError of fieldErrors | keyvalue">{{ fieldError.key }}: {{ fieldError.value }}</li>
-</ul>
-
-<div class="detail-container" *ngIf="!isLoading && !error && process; else noProcess">
-  <h2>Detalle del proceso</h2>
-
-  <div class="detail-card">
-    <p><strong>ID:</strong> {{ process.id }}</p>
-    <p><strong>Nombre:</strong> {{ process.name }}</p>
-    <p><strong>Descripción:</strong> {{ process.description || 'Sin descripción' }}</p>
-    <p><strong>Estado:</strong> {{ process.status }}</p>
-  </div>
-
-  <a routerLink="/processes" class="back-link">Volver a la lista</a>
+<!-- Loading -->
+<div class="loading-wrap" *ngIf="isLoading">
+  <div class="spinner"></div>
+  <span>Cargando proceso…</span>
 </div>
 
+<!-- Error -->
+<div class="alert alert-error" *ngIf="error" role="alert">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+  {{ error }}
+</div>
+<ul class="field-errors" *ngIf="(fieldErrors | keyvalue).length > 0">
+  <li *ngFor="let fe of fieldErrors | keyvalue">{{ fe.key }}: {{ fe.value }}</li>
+</ul>
+
+<!-- Detalle -->
+<div class="detail-container" *ngIf="!isLoading && !error && process; else noProcess">
+
+  <!-- Back link -->
+  <a routerLink="/processes" class="back-link">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+    Volver a la lista
+  </a>
+
+  <!-- Header del detalle -->
+  <div class="detail-header">
+    <div class="detail-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
+    </div>
+    <div>
+      <h2 class="detail-title">{{ process.name }}</h2>
+      <span class="badge badge-default">{{ process.status }}</span>
+    </div>
+    <a class="btn btn-secondary btn-sm detail-edit-btn" [routerLink]="['/processes', process.id, 'edit']">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      Editar
+    </a>
+  </div>
+
+  <!-- Info card -->
+  <div class="detail-card">
+    <dl class="detail-grid">
+      <div class="detail-item">
+        <dt>ID</dt>
+        <dd>{{ process.id }}</dd>
+      </div>
+      <div class="detail-item">
+        <dt>Nombre</dt>
+        <dd>{{ process.name }}</dd>
+      </div>
+      <div class="detail-item">
+        <dt>Estado</dt>
+        <dd>
+          <span class="badge badge-default">{{ process.status }}</span>
+        </dd>
+      </div>
+      <div class="detail-item detail-item-full">
+        <dt>Descripción</dt>
+        <dd>{{ process.description || 'Sin descripción disponible.' }}</dd>
+      </div>
+    </dl>
+  </div>
+</div>
+
+<!-- No encontrado -->
 <ng-template #noProcess>
-  <div *ngIf="!isLoading && !error">
-    <p>No se encontró el proceso.</p>
-    <a routerLink="/processes">Volver a la lista</a>
+  <div class="empty-state" *ngIf="!isLoading && !error">
+    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <h3>Proceso no encontrado</h3>
+    <p>El proceso que buscas no existe o fue eliminado.</p>
+    <a routerLink="/processes" class="btn btn-primary">Volver al listado</a>
   </div>
 </ng-template>

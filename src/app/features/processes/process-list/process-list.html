@@ -1,59 +1,117 @@
 <div class="container">
-  <div class="header-actions">
-    <div>
-      <h2>Modulo de procesos</h2>
-      <p class="subtitle">Vista base del visor de procesos.</p>
-    </div>
 
-    <a class="primary-action" routerLink="/processes/new">Nuevo proceso</a>
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Procesos</h2>
+      <p class="page-subtitle">Visualiza y gestiona todos los procesos empresariales</p>
+    </div>
+    <a class="btn btn-primary" routerLink="/processes/new" id="new-process-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Nuevo proceso
+    </a>
   </div>
 
-  <form class="filters" (ngSubmit)="applyFilters()">
-    <label>
-      Buscar por nombre
-      <input
-        type="text"
-        name="nameFilter"
-        [(ngModel)]="nameFilter"
-        placeholder="Ej: ventas"
-      />
-    </label>
+  <!-- Filtros -->
+  <div class="filters-card">
+    <form class="filters-form" (ngSubmit)="applyFilters()">
+      <div class="filter-group">
+        <label class="form-label" for="nameFilter">Buscar por nombre</label>
+        <div class="input-wrapper">
+          <span class="input-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </span>
+          <input id="nameFilter" type="text" class="form-control with-icon" name="nameFilter"
+            [(ngModel)]="nameFilter" placeholder="Ej: Proceso de ventas">
+        </div>
+      </div>
 
-    <label>
-      Filtrar por estado
-      <select name="statusFilter" [(ngModel)]="statusFilter">
-        <option value="">Todos</option>
-        <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
-      </select>
-    </label>
+      <div class="filter-group">
+        <label class="form-label" for="statusFilter">Estado</label>
+        <select id="statusFilter" class="form-control" name="statusFilter" [(ngModel)]="statusFilter">
+          <option value="">Todos</option>
+          <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+        </select>
+      </div>
 
-    <div class="filter-actions">
-      <button type="submit" [disabled]="isLoading">Buscar</button>
-      <button type="button" class="secondary" (click)="clearFilters()" [disabled]="isLoading">Limpiar</button>
-    </div>
-  </form>
+      <div class="filter-actions">
+        <button type="submit" class="btn btn-primary btn-sm" [disabled]="isLoading" id="apply-filters-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          Buscar
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" (click)="clearFilters()" [disabled]="isLoading" id="clear-filters-btn">
+          Limpiar
+        </button>
+      </div>
+    </form>
+  </div>
 
-  <p *ngIf="isLoading">Cargando...</p>
+  <!-- Loading -->
+  <div class="loading-wrap" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <span>Cargando procesos…</span>
+  </div>
 
-  <p *ngIf="error">{{ error }}</p>
-  <ul *ngIf="(fieldErrors | keyvalue).length > 0">
-    <li *ngFor="let fieldError of fieldErrors | keyvalue">{{ fieldError.key }}: {{ fieldError.value }}</li>
+  <!-- Error -->
+  <div class="alert alert-error" *ngIf="error" role="alert">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    {{ error }}
+  </div>
+  <ul class="field-errors" *ngIf="(fieldErrors | keyvalue).length > 0">
+    <li *ngFor="let fe of fieldErrors | keyvalue">{{ fe.key }}: {{ fe.value }}</li>
   </ul>
 
-  <div class="process-grid" *ngIf="!isLoading && !error && filteredProcesses.length > 0; else noProcesses">
+  <!-- Grid de procesos -->
+  <div class="process-grid" *ngIf="!isLoading && !error && filteredProcesses.length > 0">
     <div class="process-card" *ngFor="let process of filteredProcesses">
-      <h3>{{ process.name }}</h3>
-      <p>{{ process.description }}</p>
-      <span class="status">Estado: {{ process.status }}</span>
+      <div class="process-card-top">
+        <div class="process-card-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+          </svg>
+        </div>
+        <span class="badge badge-default">{{ process.status }}</span>
+      </div>
 
-      <div class="actions">
-        <a [routerLink]="['/processes', process.id]">Ver detalle</a>
-        <a [routerLink]="['/processes', process.id, 'edit']">Editar</a>
+      <h3 class="process-card-name">{{ process.name }}</h3>
+      <p class="process-card-desc">{{ process.description || 'Sin descripción disponible.' }}</p>
+
+      <div class="process-card-footer">
+        <a class="btn btn-ghost btn-sm" [routerLink]="['/processes', process.id]">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+          Ver detalle
+        </a>
+        <a class="btn btn-secondary btn-sm" [routerLink]="['/processes', process.id, 'edit']">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Editar
+        </a>
       </div>
     </div>
   </div>
 
-  <ng-template #noProcesses>
-    <p *ngIf="!isLoading && !error">No hay procesos disponibles para mostrar.</p>
-  </ng-template>
+  <!-- Estado vacío -->
+  <div class="empty-state" *ngIf="!isLoading && !error && filteredProcesses.length === 0">
+    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+      <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+    </svg>
+    <h3>No hay procesos disponibles</h3>
+    <p>Crea un nuevo proceso para comenzar</p>
+    <a class="btn btn-primary" routerLink="/processes/new">Crear primer proceso</a>
+  </div>
+
 </div>

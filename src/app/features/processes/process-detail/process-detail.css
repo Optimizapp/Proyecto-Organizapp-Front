@@ -1,17 +1,109 @@
+/* ── Process Detail ───────────────────────────────────────── */
 .detail-container {
-  padding: 24px;
+  padding: 2rem 2.25rem;
+  max-width: 860px;
 }
 
-.detail-card {
-  border: 1px solid #dcdcdc;
-  border-radius: 10px;
-  padding: 20px;
-  margin-bottom: 16px;
-  background: #fff;
-}
-
+/* Back link */
 .back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.875rem;
   text-decoration: none;
-  color: #1976d2;
-  font-weight: 500;
+  margin-bottom: 1.5rem;
+  transition: gap var(--transition), color var(--transition);
+}
+.back-link:hover { color: var(--accent-hover); gap: 0.65rem; }
+
+/* Detail header */
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.detail-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  background: var(--accent-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.detail-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.35rem;
+}
+
+.detail-edit-btn {
+  margin-left: auto;
+}
+
+/* Detail card */
+.detail-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 1.75rem;
+}
+
+/* Definition grid */
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.detail-item-full {
+  grid-column: 1 / -1;
+}
+
+.detail-item dt {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+}
+
+.detail-item dd {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+/* Field errors */
+.field-errors {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 1rem;
+}
+.field-errors li {
+  font-size: 0.85rem;
+  color: var(--danger);
+  padding: 0.25rem 0;
+}
+
+@media (max-width: 640px) {
+  .detail-container { padding: 1.25rem 1rem; }
+  .detail-header { flex-direction: column; align-items: flex-start; }
+  .detail-edit-btn { margin-left: 0; }
 }
