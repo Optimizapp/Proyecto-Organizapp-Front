@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { finalize, timeout } from 'rxjs';
 
 import { CompanyResponse, FormErrorMap, RoleResponse } from '../../../core/models';
 import { ApiErrorService } from '../../../core/services/api-error.service';
@@ -38,7 +38,9 @@ import { RoleService } from '../../../services/role.service';
           Nombre del rol
           <input type="text" formControlName="name" />
           <small *ngIf="isRoleInvalid('name')">El nombre del rol es obligatorio.</small>
-          <small *ngIf="fieldErrors['name']">{{ fieldErrors['name'] }}</small>
+          <small *ngIf="fieldErrors['name'] || fieldErrors['nombre']">
+            {{ fieldErrors['name'] || fieldErrors['nombre'] }}
+          </small>
         </label>
         <button type="submit" [disabled]="isSaving || !filterForm.controls.companyId.value">
           {{ isSaving ? 'Creando...' : 'Crear rol' }}
@@ -197,11 +199,14 @@ export class RoleList implements OnInit {
     this.isSaving = true;
     this.roleService
       .createRole({
-        name: this.roleForm.controls.name.value ?? '',
+        nombre: this.roleForm.controls.name.value ?? '',
         companyId,
         processId: null
       })
-      .pipe(finalize(() => (this.isSaving = false)))
+      .pipe(
+        timeout(15000),
+        finalize(() => (this.isSaving = false))
+      )
       .subscribe({
         next: () => {
           this.roleForm.reset();
@@ -257,5 +262,11 @@ export class RoleList implements OnInit {
   private applyError(error: unknown): void {
     this.error = this.apiErrorService.getMessage(error);
     this.fieldErrors = this.apiErrorService.getFieldErrors(error);
+    if (this.fieldErrors['nombre'] && !this.fieldErrors['name']) {
+      this.fieldErrors = {
+        ...this.fieldErrors,
+        name: this.fieldErrors['nombre']
+      };
+    }
   }
 }
