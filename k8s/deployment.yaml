@@ -18,6 +18,7 @@ spec:
       containers:
         - name: angular-app
           image: ghcr.io/optimizapp/proyecto_organizapp_front:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
       imagePullSecrets:
