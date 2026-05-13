@@ -4,7 +4,7 @@
   <h2>{{ isEditMode ? 'Editar proceso' : 'Crear proceso' }}</h2>
   <p class="subtitle">Completa la informacion basica del proceso.</p>
 
-  <p *ngIf="isLoading" class="info-message">Cargando informacion del proceso...</p>
+  <p *ngIf="!isInitialDataReady" class="info-message">Cargando informacion del proceso...</p>
 
   <div *ngIf="error" class="error-message">
     <p>{{ error }}</p>
@@ -15,7 +15,7 @@
     </ul>
   </div>
 
-  <form [formGroup]="processForm" (ngSubmit)="saveProcess()" *ngIf="!isLoading">
+  <form [formGroup]="processForm" (ngSubmit)="saveProcess()" *ngIf="isInitialDataReady">
     <div class="form-grid">
       <div class="form-field">
         <label for="name">Nombre</label>

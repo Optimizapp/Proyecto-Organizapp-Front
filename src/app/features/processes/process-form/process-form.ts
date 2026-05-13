@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Subject, finalize, takeUntil } from 'rxjs';
+import { Subject, asyncScheduler, finalize, observeOn, takeUntil } from 'rxjs';
 
 import { ApiErrorService } from '../../../core/services/api-error.service';
 import { CompanyResponse, PoolResponse, UserResponse } from '../../../core/models';
@@ -21,6 +21,7 @@ import { ProcessService } from '../process.service';
 })
 export class ProcessForm implements OnInit, OnDestroy {
   private readonly formBuilder = inject(FormBuilder);
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
   readonly statusOptions: ProcessStatus[] = ['DRAFT', 'ACTIVE', 'INACTIVE', 'ARCHIVED'];
 
@@ -28,9 +29,10 @@ export class ProcessForm implements OnInit, OnDestroy {
   isEditMode = false;
   isLoading = false;
   isSubmitting = false;
-  isLoadingCompanies = false;
-  isLoadingUsers = false;
+  isLoadingCompanies = true;
+  isLoadingUsers = true;
   isLoadingPools = false;
+  isInitialDataReady = false;
   error: string | null = null;
   fieldErrors: Record<string, string> = {};
   companies: CompanyResponse[] = [];
@@ -63,33 +65,16 @@ export class ProcessForm implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadCompanies();
     this.loadUsers();
-
-    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
-      const idParam = params.get('id');
-      const id = Number(idParam);
-
-      if (!idParam) {
-        this.processId = undefined;
-        this.isEditMode = false;
-        this.isLoading = false;
-        return;
-      }
-
-      if (Number.isNaN(id) || id <= 0) {
-        this.error = 'El identificador del proceso no es valido.';
-        this.isLoading = false;
-        return;
-      }
-
-      this.processId = id;
-      this.isEditMode = true;
-      this.loadProcess(id);
-    });
+    this.subscribeToRouteParams();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  get isLoadingInitialData(): boolean {
+    return !this.isInitialDataReady;
   }
 
   saveProcess(): void {
@@ -166,13 +151,21 @@ export class ProcessForm implements OnInit, OnDestroy {
 
   private loadCompanies(): void {
     this.isLoadingCompanies = true;
+    this.isInitialDataReady = false;
 
     this.companyService
       .getCompanies()
-      .pipe(finalize(() => (this.isLoadingCompanies = false)))
+      .pipe(
+        observeOn(asyncScheduler),
+        finalize(() => {
+          this.isLoadingCompanies = false;
+          this.updateInitialDataReady();
+          this.changeDetector.markForCheck();
+        })
+      )
       .subscribe({
         next: (companies) => {
-          this.companies = companies;
+          this.companies = companies ?? [];
         },
         error: (error: unknown) => {
           this.companies = [];
@@ -182,15 +175,49 @@ export class ProcessForm implements OnInit, OnDestroy {
       });
   }
 
+  private subscribeToRouteParams(): void {
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      const idParam = params.get('id');
+      const id = Number(idParam);
+
+      if (!idParam) {
+        this.processId = undefined;
+        this.isEditMode = false;
+        this.isLoading = false;
+        this.updateInitialDataReady();
+        return;
+      }
+
+      if (Number.isNaN(id) || id <= 0) {
+        this.error = 'El identificador del proceso no es valido.';
+        this.isLoading = false;
+        this.updateInitialDataReady();
+        return;
+      }
+
+      this.processId = id;
+      this.isEditMode = true;
+      this.loadProcess(id);
+    });
+  }
+
   private loadUsers(): void {
     this.isLoadingUsers = true;
+    this.isInitialDataReady = false;
 
     this.userService
       .getUsers()
-      .pipe(finalize(() => (this.isLoadingUsers = false)))
+      .pipe(
+        observeOn(asyncScheduler),
+        finalize(() => {
+          this.isLoadingUsers = false;
+          this.updateInitialDataReady();
+          this.changeDetector.markForCheck();
+        })
+      )
       .subscribe({
         next: (users) => {
-          this.users = users;
+          this.users = users ?? [];
           this.filterUsersByCompany(this.getSelectedCompanyId());
           this.updateUserControlState();
         },
@@ -206,12 +233,20 @@ export class ProcessForm implements OnInit, OnDestroy {
 
   private loadProcess(id: number): void {
     this.isLoading = true;
+    this.isInitialDataReady = false;
     this.error = null;
     this.fieldErrors = {};
 
     this.processService
       .getProcessById(id)
-      .pipe(finalize(() => (this.isLoading = false)))
+      .pipe(
+        observeOn(asyncScheduler),
+        finalize(() => {
+          this.isLoading = false;
+          this.updateInitialDataReady();
+          this.changeDetector.markForCheck();
+        })
+      )
       .subscribe({
         next: (process) => {
           this.processForm.patchValue({
@@ -241,10 +276,16 @@ export class ProcessForm implements OnInit, OnDestroy {
 
     this.poolService
       .getPools(companyId)
-      .pipe(finalize(() => (this.isLoadingPools = false)))
+      .pipe(
+        observeOn(asyncScheduler),
+        finalize(() => {
+          this.isLoadingPools = false;
+          this.changeDetector.markForCheck();
+        })
+      )
       .subscribe({
         next: (pools) => {
-          this.pools = pools;
+          this.pools = pools ?? [];
           this.processForm.controls.mainPoolId.enable();
 
           if (selectedPoolId) {
@@ -302,5 +343,9 @@ export class ProcessForm implements OnInit, OnDestroy {
     }
 
     this.processForm.controls.userId.disable();
+  }
+
+  private updateInitialDataReady(): void {
+    this.isInitialDataReady = !this.isLoading && !this.isLoadingCompanies && !this.isLoadingUsers;
   }
 }
