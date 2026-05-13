@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import {
   CreateProcessRequest,
   Process,
@@ -29,7 +30,9 @@ export class ProcessService {
       params = params.set('status', status);
     }
 
-    return this.http.get<ProcessResponse[]>(this.apiUrl, { params });
+    return this.http
+      .get<BackendProcessListResponse>(this.apiUrl, { params })
+      .pipe(map((response) => this.normalizeProcessesResponse(response)));
   }
 
   getProcessById(id: number): Observable<ProcessResponse> {
@@ -47,4 +50,10 @@ export class ProcessService {
   deleteProcess(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  private normalizeProcessesResponse(response: BackendProcessListResponse): ProcessResponse[] {
+    return Array.isArray(response) ? response : response.value ?? [];
+  }
 }
+
+type BackendProcessListResponse = ProcessResponse[] | { value?: ProcessResponse[] };

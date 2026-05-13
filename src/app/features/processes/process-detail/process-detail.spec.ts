@@ -28,6 +28,7 @@ describe('ProcessDetail', () => {
         {
           provide: ActivatedRoute,
           useValue: {
+            paramMap: of(convertToParamMap({ id: '1' })),
             snapshot: {
               paramMap: convertToParamMap({ id: '1' })
             }

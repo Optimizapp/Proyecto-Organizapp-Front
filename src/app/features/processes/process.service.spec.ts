@@ -44,6 +44,16 @@ describe('ProcessService', () => {
     req.flush([process]);
   });
 
+  it('should normalize wrapped process list responses', () => {
+    service.getProcesses().subscribe((processes) => {
+      expect(processes).toEqual([process]);
+    });
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/processes`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ value: [process], Count: 1 });
+  });
+
   it('should get processes using companyId and status query params', () => {
     service.getProcesses(2, 'ACTIVE').subscribe((processes) => {
       expect(processes).toEqual([{ ...process, status: 'ACTIVE' }]);
