@@ -54,6 +54,16 @@ describe('ProcessService', () => {
     req.flush({ value: [process], Count: 1 });
   });
 
+  it('should normalize null process list responses as an empty array', () => {
+    service.getProcesses().subscribe((processes) => {
+      expect(processes).toEqual([]);
+    });
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/processes`);
+    expect(req.request.method).toBe('GET');
+    req.flush(null);
+  });
+
   it('should get processes using companyId and status query params', () => {
     service.getProcesses(2, 'ACTIVE').subscribe((processes) => {
       expect(processes).toEqual([{ ...process, status: 'ACTIVE' }]);

@@ -52,8 +52,12 @@ export class ProcessService {
   }
 
   private normalizeProcessesResponse(response: BackendProcessListResponse): ProcessResponse[] {
+    if (!response) {
+      return [];
+    }
+
     return Array.isArray(response) ? response : response.value ?? [];
   }
 }
 
-type BackendProcessListResponse = ProcessResponse[] | { value?: ProcessResponse[] };
+type BackendProcessListResponse = ProcessResponse[] | { value?: ProcessResponse[] } | null | undefined;
