@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { Observable, Subject, of, throwError } from 'rxjs';
 
 import { ProcessForm } from './process-form';
 import { ProcessService } from '../process.service';
@@ -87,6 +87,8 @@ describe('ProcessForm', () => {
     usersOverride?: UserResponse[];
     poolsOverride?: PoolResponse[];
     companiesOverride?: CompanyResponse[];
+    companiesResponse$?: Observable<CompanyResponse[]>;
+    usersResponse$?: Observable<UserResponse[]>;
   }): Promise<void> {
     processServiceMock = {
       getProcessById: vi.fn(() => of(process)),
@@ -94,10 +96,10 @@ describe('ProcessForm', () => {
       updateProcess: vi.fn(() => of(process))
     };
     companyServiceMock = {
-      getCompanies: vi.fn(() => of(options?.companiesOverride ?? companies))
+      getCompanies: vi.fn(() => options?.companiesResponse$ ?? of(options?.companiesOverride ?? companies))
     };
     userServiceMock = {
-      getUsers: vi.fn(() => of(options?.usersOverride ?? users))
+      getUsers: vi.fn(() => options?.usersResponse$ ?? of(options?.usersOverride ?? users))
     };
     poolServiceMock = {
       getPools: vi.fn((_companyId: number) => of(options?.poolsOverride ?? pools))
@@ -130,6 +132,16 @@ describe('ProcessForm', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
     await fixture.whenStable();
+    await flushAsyncWork();
+    await flushAsyncWork();
+    await flushAsyncWork();
+    await flushAsyncWork();
+  }
+
+  async function flushAsyncWork(): Promise<void> {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+    await fixture.whenStable();
   }
 
   afterEach(() => {
@@ -153,6 +165,27 @@ describe('ProcessForm', () => {
     expect(component.users).toEqual(users);
   });
 
+  it('should keep the form hidden while initial lists are loading', async () => {
+    const companiesResponse$ = new Subject<CompanyResponse[]>();
+    const usersResponse$ = new Subject<UserResponse[]>();
+
+    await createComponent({ companiesResponse$, usersResponse$ });
+
+    expect(component.isLoadingInitialData).toBe(true);
+    expect(fixture.nativeElement.querySelector('form')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Cargando informacion del proceso');
+
+    companiesResponse$.next(companies);
+    companiesResponse$.complete();
+    usersResponse$.next(users);
+    usersResponse$.complete();
+    await flushAsyncWork();
+    await flushAsyncWork();
+
+    expect(component.isLoadingInitialData).toBe(false);
+    expect(fixture.nativeElement.querySelector('form')).not.toBeNull();
+  });
+
   it('should start with dependent selects disabled', async () => {
     await createComponent();
 
@@ -169,9 +202,10 @@ describe('ProcessForm', () => {
       mainPoolId: 99
     });
     component.onCompanyChange();
+    await flushAsyncWork();
 
-    expect(component.processForm.value.userId).toBeNull();
-    expect(component.processForm.value.mainPoolId).toBeNull();
+    expect(component.processForm.getRawValue().userId).toBeNull();
+    expect(component.processForm.getRawValue().mainPoolId).toBeNull();
     expect(component.filteredUsers).toEqual([users[0]]);
     expect(poolServiceMock.getPools).toHaveBeenCalledWith(1);
     expect(component.pools).toEqual(pools);
