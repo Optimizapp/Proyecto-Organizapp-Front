@@ -54,22 +54,24 @@ export class ProcessList implements OnInit {
       .subscribe({
         next: (data) => {
           this.processes = data ?? [];
-          this.applyNameFilter();
+          this.applyLocalFilters();
+          this.isLoading = false;
         },
         error: (error: unknown) => {
           this.processes = [];
           this.filteredProcesses = [];
           this.error = this.apiErrorService.getMessage(error);
           this.fieldErrors = this.apiErrorService.getFieldErrors(error);
+          this.isLoading = false;
         }
       });
   }
 
-  private applyNameFilter(): void {
+  private applyLocalFilters(): void {
     const name = this.nameFilter.trim().toLowerCase();
 
     this.filteredProcesses = this.processes.filter((process) => {
-      return !name || process.name.toLowerCase().includes(name);
+      return !name || (process.name ?? '').toLowerCase().includes(name);
     });
   }
 }

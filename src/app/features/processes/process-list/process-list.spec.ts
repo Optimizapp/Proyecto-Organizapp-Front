@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, Subject, of, throwError } from 'rxjs';
 
 import { ProcessList } from './process-list';
 import { ProcessService } from '../process.service';
@@ -61,7 +61,24 @@ describe('ProcessList', () => {
     expect(getProcessesSpy).toHaveBeenCalledWith(undefined, undefined);
     expect(component.processes).toEqual(processes);
     expect(component.filteredProcesses).toEqual(processes);
+    expect(component.isLoading).toBe(false);
     expect(component.error).toBeNull();
+  });
+
+  it('should stop loading and render processes when the service emits data', async () => {
+    const response$ = new Subject<ProcessResponse[]>();
+    await createComponent(response$);
+
+    expect(component.isLoading).toBe(true);
+
+    response$.next(processes);
+    fixture.detectChanges();
+
+    expect(component.isLoading).toBe(false);
+    expect(component.processes).toEqual(processes);
+    expect(component.filteredProcesses).toEqual(processes);
+    expect(fixture.nativeElement.textContent).toContain('Proceso de ventas');
+    expect(fixture.nativeElement.textContent).toContain('Proceso de compras');
   });
 
   it('should filter processes by name locally after loading data', async () => {
@@ -123,6 +140,7 @@ describe('ProcessList', () => {
 
     expect(component.processes).toEqual([]);
     expect(component.filteredProcesses).toEqual([]);
+    expect(component.isLoading).toBe(false);
     expect(component.error).toBe('El servidor no pudo procesar la solicitud. Intenta nuevamente mas tarde.');
   });
 });
