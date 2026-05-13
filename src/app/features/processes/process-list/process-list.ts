@@ -53,7 +53,7 @@ export class ProcessList implements OnInit {
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: (data) => {
-          this.processes = data;
+          this.processes = data ?? [];
           this.applyNameFilter();
         },
         error: (error: unknown) => {

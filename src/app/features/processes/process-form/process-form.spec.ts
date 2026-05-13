@@ -114,6 +114,7 @@ describe('ProcessForm', () => {
         {
           provide: ActivatedRoute,
           useValue: {
+            paramMap: of(convertToParamMap(options?.id ? { id: options.id } : {})),
             snapshot: {
               paramMap: convertToParamMap(options?.id ? { id: options.id } : {})
             }
