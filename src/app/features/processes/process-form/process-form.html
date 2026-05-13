@@ -34,13 +34,12 @@
       <div class="form-field">
         <label for="companyId">Empresa</label>
         <select id="companyId" formControlName="companyId" (change)="onCompanyChange()">
-          <option [ngValue]="null">
-            {{ isLoadingCompanies ? 'Cargando empresas...' : 'Seleccione una empresa' }}
-          </option>
+          <option [ngValue]="null">Seleccione una empresa</option>
           <option *ngFor="let company of companies" [ngValue]="company.id">
             {{ getCompanyLabel(company) }}
           </option>
         </select>
+        <small *ngIf="isLoadingCompanies">Cargando empresas...</small>
         <small *ngIf="isInvalid('companyId')">La empresa es obligatoria.</small>
         <small *ngIf="!isLoadingCompanies && companies.length === 0">
           No hay empresas disponibles.
@@ -49,17 +48,13 @@
 
       <div class="form-field">
         <label for="userId">Usuario responsable</label>
-        <select
-          id="userId"
-          formControlName="userId"
-        >
-          <option [ngValue]="null">
-            {{ isLoadingUsers ? 'Cargando usuarios...' : 'Seleccione un usuario' }}
-          </option>
+        <select id="userId" formControlName="userId">
+          <option [ngValue]="null">Seleccione un usuario</option>
           <option *ngFor="let user of filteredUsers" [ngValue]="user.id">
             {{ getUserLabel(user) }}
           </option>
         </select>
+        <small *ngIf="isLoadingUsers">Cargando usuarios...</small>
         <small *ngIf="isInvalid('userId')">El usuario responsable es obligatorio.</small>
         <small *ngIf="processForm.controls.companyId.value && !isLoadingUsers && filteredUsers.length === 0">
           No hay usuarios disponibles para la empresa seleccionada.
@@ -68,17 +63,13 @@
 
       <div class="form-field">
         <label for="mainPoolId">Pool principal</label>
-        <select
-          id="mainPoolId"
-          formControlName="mainPoolId"
-        >
-          <option [ngValue]="null">
-            {{ isLoadingPools ? 'Cargando pools...' : 'Seleccione un pool' }}
-          </option>
+        <select id="mainPoolId" formControlName="mainPoolId">
+          <option [ngValue]="null">Seleccione un pool</option>
           <option *ngFor="let pool of pools" [ngValue]="pool.id">
             {{ pool.name }}
           </option>
         </select>
+        <small *ngIf="isLoadingPools">Cargando pools...</small>
         <small *ngIf="isInvalid('mainPoolId')">El pool principal es obligatorio segun el contrato actual.</small>
         <small *ngIf="processForm.controls.companyId.value && !isLoadingPools && pools.length === 0">
           La empresa seleccionada no tiene pools disponibles.

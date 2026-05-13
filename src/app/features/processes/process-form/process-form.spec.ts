@@ -82,20 +82,25 @@ describe('ProcessForm', () => {
     }
   ];
 
-  async function createComponent(id?: string): Promise<void> {
+  async function createComponent(options?: {
+    id?: string;
+    usersOverride?: UserResponse[];
+    poolsOverride?: PoolResponse[];
+    companiesOverride?: CompanyResponse[];
+  }): Promise<void> {
     processServiceMock = {
       getProcessById: vi.fn(() => of(process)),
       createProcess: vi.fn(() => of(process)),
       updateProcess: vi.fn(() => of(process))
     };
     companyServiceMock = {
-      getCompanies: vi.fn(() => of(companies))
+      getCompanies: vi.fn(() => of(options?.companiesOverride ?? companies))
     };
     userServiceMock = {
-      getUsers: vi.fn(() => of(users))
+      getUsers: vi.fn(() => of(options?.usersOverride ?? users))
     };
     poolServiceMock = {
-      getPools: vi.fn((_companyId: number) => of(pools))
+      getPools: vi.fn((_companyId: number) => of(options?.poolsOverride ?? pools))
     };
 
     await TestBed.configureTestingModule({
@@ -110,7 +115,7 @@ describe('ProcessForm', () => {
           provide: ActivatedRoute,
           useValue: {
             snapshot: {
-              paramMap: convertToParamMap(id ? { id } : {})
+              paramMap: convertToParamMap(options?.id ? { id: options.id } : {})
             }
           }
         }
@@ -173,6 +178,16 @@ describe('ProcessForm', () => {
     expect(component.processForm.controls.mainPoolId.enabled).toBe(true);
   });
 
+  it('should keep user disabled when no users for company', async () => {
+    await createComponent({ usersOverride: [] });
+
+    component.processForm.patchValue({ companyId: 1 });
+    component.onCompanyChange();
+
+    expect(component.filteredUsers).toEqual([]);
+    expect(component.processForm.controls.userId.disabled).toBe(true);
+  });
+
   it('should call createProcess when the create form is valid', async () => {
     await createComponent();
 
@@ -200,7 +215,7 @@ describe('ProcessForm', () => {
   });
 
   it('should load the process and call updateProcess in edit mode', async () => {
-    await createComponent('1');
+    await createComponent({ id: '1' });
 
     expect(component.isEditMode).toBe(true);
     expect(processServiceMock.getProcessById).toHaveBeenCalledWith(1);

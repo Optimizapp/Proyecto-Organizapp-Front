@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { finalize } from 'rxjs';
+import { Subject, finalize, takeUntil } from 'rxjs';
 
 import { ApiErrorService } from '../../../core/services/api-error.service';
 import { CompanyResponse, PoolResponse, UserResponse } from '../../../core/models';
@@ -19,7 +19,7 @@ import { ProcessService } from '../process.service';
   templateUrl: './process-form.html',
   styleUrl: './process-form.css'
 })
-export class ProcessForm implements OnInit {
+export class ProcessForm implements OnInit, OnDestroy {
   private readonly formBuilder = inject(FormBuilder);
 
   readonly statusOptions: ProcessStatus[] = ['DRAFT', 'ACTIVE', 'INACTIVE', 'ARCHIVED'];
@@ -37,6 +37,8 @@ export class ProcessForm implements OnInit {
   users: UserResponse[] = [];
   filteredUsers: UserResponse[] = [];
   pools: PoolResponse[] = [];
+
+  private readonly destroy$ = new Subject<void>();
 
   processForm = this.formBuilder.group({
     name: ['', Validators.required],
@@ -62,21 +64,32 @@ export class ProcessForm implements OnInit {
     this.loadCompanies();
     this.loadUsers();
 
-    const idParam = this.route.snapshot.paramMap.get('id');
-    const id = Number(idParam);
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      const idParam = params.get('id');
+      const id = Number(idParam);
 
-    if (!idParam) {
-      return;
-    }
+      if (!idParam) {
+        this.processId = undefined;
+        this.isEditMode = false;
+        this.isLoading = false;
+        return;
+      }
 
-    if (Number.isNaN(id) || id <= 0) {
-      this.error = 'El identificador del proceso no es valido.';
-      return;
-    }
+      if (Number.isNaN(id) || id <= 0) {
+        this.error = 'El identificador del proceso no es valido.';
+        this.isLoading = false;
+        return;
+      }
 
-    this.processId = id;
-    this.isEditMode = true;
-    this.loadProcess(id);
+      this.processId = id;
+      this.isEditMode = true;
+      this.loadProcess(id);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   saveProcess(): void {
@@ -283,7 +296,7 @@ export class ProcessForm implements OnInit {
   }
 
   private updateUserControlState(): void {
-    if (this.getSelectedCompanyId() && !this.isLoadingUsers) {
+    if (this.getSelectedCompanyId() && !this.isLoadingUsers && this.filteredUsers.length > 0) {
       this.processForm.controls.userId.enable();
       return;
     }
