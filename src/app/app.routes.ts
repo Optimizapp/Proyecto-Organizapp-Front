@@ -4,6 +4,7 @@ import { CompanyFormComponent } from './features/companies/form/company-form.com
 import { LaneList } from './features/lanes/lane-list/lane-list';
 import { PoolForm } from './features/pools/pool-form/pool-form';
 import { PoolList } from './features/pools/pool-list/pool-list';
+import { ProcessCanvasComponent } from './features/processes/process-canvas/process-canvas.component';
 import { ProcessList } from './features/processes/process-list/process-list';
 import { ProcessDetail } from './features/processes/process-detail/process-detail';
 import { ProcessForm } from './features/processes/process-form/process-form';
@@ -27,6 +28,7 @@ export const routes: Routes = [
   { path: 'lanes', component: LaneList },
   { path: 'processes', component: ProcessList },
   { path: 'processes/new', component: ProcessForm },
+  { path: 'processes/:id/canvas', component: ProcessCanvasComponent },
   { path: 'processes/:id/edit', component: ProcessForm },
   { path: 'processes/:id', component: ProcessDetail },
   {   
