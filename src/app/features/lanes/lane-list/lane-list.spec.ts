@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { of, throwError } from 'rxjs';
 
 import { CompanyResponse, LaneResponse, PoolResponse } from '../../../core/models';
@@ -29,7 +30,9 @@ describe('LaneList', () => {
     { id: 30, name: 'Pool principal', companyId: 10 }
   ];
   const lanes: LaneResponse[] = [
-    { id: 40, name: 'Lane inicial', poolId: 30, description: 'Base' }
+    { id: 40, name: 'Lane inicial', poolId: 30, description: 'Base' },
+    { id: 41, name: 'Lane revision', poolId: 30, description: 'Revision' },
+    { id: 42, name: 'Lane cierre', poolId: 30, description: 'Cierre' }
   ];
 
   async function createComponent(): Promise<void> {
@@ -89,6 +92,26 @@ describe('LaneList', () => {
 
     expect(laneServiceMock.getLanes).toHaveBeenCalledWith(30);
     expect(component.lanes).toEqual(lanes);
+  });
+
+  it('should reorder lanes locally without persisting', async () => {
+    await createComponent();
+    component.lanes = [...lanes];
+
+    component.dropLane({
+      previousIndex: 0,
+      currentIndex: 2
+    } as CdkDragDrop<LaneResponse[]>);
+
+    expect(component.lanes.map((lane) => lane.id)).toEqual([41, 42, 40]);
+    expect(laneServiceMock.createLane).not.toHaveBeenCalled();
+  });
+
+  it('should render the drop list container without requiring persisted order', async () => {
+    await createComponent();
+
+    expect(fixture.nativeElement.querySelector('[cdkDropList]')).not.toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Arrastra una lane');
   });
 
   it('should create a lane', async () => {

@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -12,7 +13,7 @@ import { PoolService } from '../../../services/pool.service';
 @Component({
   selector: 'app-lane-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, CdkDropList, CdkDrag, CdkDragHandle],
   template: `
     <section class="feature-page">
       <h2>Lanes</h2>
@@ -67,25 +68,29 @@ import { PoolService } from '../../../services/pool.service';
         No hay lanes registradas para el pool seleccionado.
       </div>
 
-      <div *ngIf="lanes.length > 0" class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>Pool</th>
-              <th>Descripcion</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let lane of lanes">
-              <td>{{ lane.id }}</td>
-              <td>{{ lane.name }}</td>
-              <td>{{ lane.poolId }}</td>
-              <td>{{ lane.description || '-' }}</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="table-wrapper">
+        <p *ngIf="lanes.length > 0" class="drag-help">
+          Arrastra una lane para reordenarla visualmente. Este orden no se guarda todavia.
+        </p>
+        <div *ngIf="lanes.length > 0" class="lane-grid lane-grid-header">
+          <span>Orden</span>
+          <span>ID</span>
+          <span>Nombre</span>
+          <span>Pool</span>
+          <span>Descripcion</span>
+        </div>
+        <div class="lane-list" cdkDropList [cdkDropListData]="lanes" (cdkDropListDropped)="dropLane($event)">
+          <div class="lane-grid lane-row" *ngFor="let lane of lanes; let index = index" cdkDrag>
+            <span>
+              <span class="drag-handle" cdkDragHandle aria-label="Arrastrar lane">::</span>
+              {{ index + 1 }}
+            </span>
+            <span>{{ lane.id }}</span>
+            <span>{{ lane.name }}</span>
+            <span>{{ lane.poolId }}</span>
+            <span>{{ lane.description || '-' }}</span>
+          </div>
+        </div>
       </div>
     </section>
   `,
@@ -148,16 +153,57 @@ import { PoolService } from '../../../services/pool.service';
         overflow-x: auto;
       }
 
-      table {
-        width: 100%;
-        border-collapse: collapse;
+      .drag-help {
+        color: var(--text-secondary);
+        font-size: 0.92rem;
+        margin: 0 0 0.75rem;
       }
 
-      th,
-      td {
+      .lane-grid {
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: minmax(80px, 0.7fr) minmax(70px, 0.6fr) minmax(160px, 1.4fr) minmax(90px, 0.7fr) minmax(180px, 1.6fr);
+        width: 100%;
+      }
+
+      .lane-grid-header {
+        color: var(--text-secondary);
+        font-weight: 700;
+        padding: 0.75rem 0.85rem;
+      }
+
+      .lane-list {
+        display: grid;
+      }
+
+      .lane-row {
+        background: #fff;
         padding: 0.85rem;
         border-bottom: 1px solid var(--border-color);
-        text-align: left;
+        align-items: center;
+      }
+
+      .lane-row.cdk-drag-preview {
+        background: #fff;
+        border-radius: var(--radius-sm);
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.18);
+      }
+
+      .lane-row.cdk-drag-placeholder {
+        opacity: 0.35;
+      }
+
+      .lane-row.cdk-drag-animating,
+      .lane-list.cdk-drop-list-dragging .lane-row:not(.cdk-drag-placeholder) {
+        transition: transform 180ms cubic-bezier(0, 0, 0.2, 1);
+      }
+
+      .drag-handle {
+        color: var(--text-secondary);
+        cursor: move;
+        display: inline-block;
+        font-weight: 700;
+        margin-right: 0.5rem;
       }
     `
   ]
@@ -244,6 +290,14 @@ export class LaneList implements OnInit {
         },
         error: (error: unknown) => this.applyError(error)
       });
+  }
+
+  dropLane(event: CdkDragDrop<LaneResponse[]>): void {
+    if (event.previousIndex === event.currentIndex) {
+      return;
+    }
+
+    moveItemInArray(this.lanes, event.previousIndex, event.currentIndex);
   }
 
   isLaneInvalid(fieldName: keyof typeof this.laneForm.controls): boolean {
