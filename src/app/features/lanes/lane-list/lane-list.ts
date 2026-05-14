@@ -70,7 +70,7 @@ import { PoolService } from '../../../services/pool.service';
 
       <div class="table-wrapper">
         <p *ngIf="lanes.length > 0" class="drag-help">
-          Arrastra una lane para reordenarla visualmente. Este orden no se guarda todavia.
+          El orden se actualiza solo visualmente en esta versión.
         </p>
         <div *ngIf="lanes.length > 0" class="lane-grid lane-grid-header">
           <span>Orden</span>
@@ -79,10 +79,10 @@ import { PoolService } from '../../../services/pool.service';
           <span>Pool</span>
           <span>Descripcion</span>
         </div>
-        <div class="lane-list" cdkDropList [cdkDropListData]="lanes" (cdkDropListDropped)="dropLane($event)">
-          <div class="lane-grid lane-row" *ngFor="let lane of lanes; let index = index" cdkDrag>
+        <div class="lane-list local-dnd-list" cdkDropList [cdkDropListData]="lanes" (cdkDropListDropped)="dropLane($event)">
+          <div class="lane-grid lane-row local-dnd-item" *ngFor="let lane of lanes; let index = index" cdkDrag>
             <span>
-              <span class="drag-handle" cdkDragHandle aria-label="Arrastrar lane">::</span>
+              <button type="button" class="drag-handle" cdkDragHandle aria-label="Mover lane">::</button>
               {{ index + 1 }}
             </span>
             <span>{{ lane.id }}</span>
@@ -153,12 +153,6 @@ import { PoolService } from '../../../services/pool.service';
         overflow-x: auto;
       }
 
-      .drag-help {
-        color: var(--text-secondary);
-        font-size: 0.92rem;
-        margin: 0 0 0.75rem;
-      }
-
       .lane-grid {
         display: grid;
         gap: 0.75rem;
@@ -183,26 +177,7 @@ import { PoolService } from '../../../services/pool.service';
         align-items: center;
       }
 
-      .lane-row.cdk-drag-preview {
-        background: #fff;
-        border-radius: var(--radius-sm);
-        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.18);
-      }
-
-      .lane-row.cdk-drag-placeholder {
-        opacity: 0.35;
-      }
-
-      .lane-row.cdk-drag-animating,
-      .lane-list.cdk-drop-list-dragging .lane-row:not(.cdk-drag-placeholder) {
-        transition: transform 180ms cubic-bezier(0, 0, 0.2, 1);
-      }
-
       .drag-handle {
-        color: var(--text-secondary);
-        cursor: move;
-        display: inline-block;
-        font-weight: 700;
         margin-right: 0.5rem;
       }
     `

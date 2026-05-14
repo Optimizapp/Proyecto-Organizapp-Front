@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { Observable, Subject, of, throwError } from 'rxjs';
@@ -10,7 +11,10 @@ import { Process, ProcessResponse, ProcessStatus } from '../models/process.model
 describe('ProcessList', () => {
   let component: ProcessList;
   let fixture: ComponentFixture<ProcessList>;
-  let getProcessesSpy: ReturnType<typeof vi.fn>;
+  let processServiceMock: {
+    getProcesses: ReturnType<typeof vi.fn>;
+    updateProcess: ReturnType<typeof vi.fn>;
+  };
 
   const processes: Process[] = [
     {
@@ -30,17 +34,29 @@ describe('ProcessList', () => {
       companyId: 1,
       userId: 1,
       mainPoolId: 1
+    },
+    {
+      id: 3,
+      name: 'Onboarding interno',
+      description: 'Flujo de talento',
+      status: 'ACTIVE',
+      companyId: 1,
+      userId: 1,
+      mainPoolId: 1
     }
   ];
 
   async function createComponent(response$: Observable<ProcessResponse[]> = of(processes)): Promise<void> {
-    getProcessesSpy = vi.fn((_companyId?: number, _status?: ProcessStatus) => response$);
+    processServiceMock = {
+      getProcesses: vi.fn((_companyId?: number, _status?: ProcessStatus) => response$),
+      updateProcess: vi.fn(() => of(processes[0]))
+    };
 
     await TestBed.configureTestingModule({
       imports: [ProcessList],
       providers: [
         provideRouter([]),
-        { provide: ProcessService, useValue: { getProcesses: getProcessesSpy } }
+        { provide: ProcessService, useValue: processServiceMock }
       ]
     }).compileComponents();
 
@@ -58,7 +74,7 @@ describe('ProcessList', () => {
     await createComponent();
 
     expect(component).toBeTruthy();
-    expect(getProcessesSpy).toHaveBeenCalledWith(undefined, undefined);
+    expect(processServiceMock.getProcesses).toHaveBeenCalledWith(undefined, undefined);
     expect(component.processes).toEqual(processes);
     expect(component.filteredProcesses).toEqual(processes);
     expect(component.isLoading).toBe(false);
@@ -87,8 +103,49 @@ describe('ProcessList', () => {
     component.nameFilter = 'ventas';
     component.applyFilters();
 
-    expect(getProcessesSpy).toHaveBeenLastCalledWith(undefined, undefined);
+    expect(processServiceMock.getProcesses).toHaveBeenLastCalledWith(undefined, undefined);
     expect(component.filteredProcesses).toEqual([processes[0]]);
+  });
+
+  it('should reorder visible processes locally without backend requests', async () => {
+    await createComponent();
+    component.filteredProcesses = [...processes];
+    vi.clearAllMocks();
+
+    component.dropProcess({
+      previousIndex: 0,
+      currentIndex: 2
+    } as CdkDragDrop<Process[]>);
+
+    expect(component.filteredProcesses.map((process) => process.id)).toEqual([2, 3, 1]);
+    expect(component.processes.map((process) => process.id)).toEqual([1, 2, 3]);
+    expect(processServiceMock.getProcesses).not.toHaveBeenCalled();
+    expect(processServiceMock.updateProcess).not.toHaveBeenCalled();
+  });
+
+  it('should reorder the filtered process list without breaking filter reset', async () => {
+    await createComponent();
+
+    component.nameFilter = 'proceso';
+    component.applyFilters();
+
+    expect(component.filteredProcesses.map((process) => process.id)).toEqual([1, 2]);
+    vi.clearAllMocks();
+
+    component.dropProcess({
+      previousIndex: 0,
+      currentIndex: 1
+    } as CdkDragDrop<Process[]>);
+
+    expect(component.filteredProcesses.map((process) => process.id)).toEqual([2, 1]);
+    expect(processServiceMock.getProcesses).not.toHaveBeenCalled();
+    expect(processServiceMock.updateProcess).not.toHaveBeenCalled();
+
+    component.clearFilters();
+
+    expect(component.nameFilter).toBe('');
+    expect(component.filteredProcesses.map((process) => process.id)).toEqual([1, 2, 3]);
+    expect(processServiceMock.getProcesses).toHaveBeenCalledWith(undefined, undefined);
   });
 
   it('should expose navigation links for creating, viewing and editing processes', async () => {
@@ -107,7 +164,7 @@ describe('ProcessList', () => {
     component.statusFilter = 'ACTIVE';
     component.applyFilters();
 
-    expect(getProcessesSpy).toHaveBeenLastCalledWith(undefined, 'ACTIVE');
+    expect(processServiceMock.getProcesses).toHaveBeenLastCalledWith(undefined, 'ACTIVE');
     expect(component.filteredProcesses).toEqual([processes[0]]);
   });
 
@@ -120,8 +177,24 @@ describe('ProcessList', () => {
 
     expect(component.nameFilter).toBe('');
     expect(component.statusFilter).toBe('');
-    expect(getProcessesSpy).toHaveBeenLastCalledWith(undefined, undefined);
+    expect(processServiceMock.getProcesses).toHaveBeenLastCalledWith(undefined, undefined);
     expect(component.filteredProcesses).toEqual(processes);
+  });
+
+  it('should render the local order warning and accessible drag handles when processes are visible', async () => {
+    await createComponent();
+
+    const compiled: HTMLElement = fixture.nativeElement;
+    const handles = compiled.querySelectorAll('button.drag-handle[cdkDragHandle][aria-label="Mover proceso"]');
+
+    expect(compiled.textContent).toContain('El orden se actualiza solo visualmente en esta versión.');
+    expect(handles.length).toBe(processes.length);
+  });
+
+  it('should hide the local order warning when there are no processes', async () => {
+    await createComponent(of([]));
+
+    expect(fixture.nativeElement.textContent).not.toContain('El orden se actualiza solo visualmente en esta versión.');
   });
 
   it('should show an empty state when there are no processes', async () => {
