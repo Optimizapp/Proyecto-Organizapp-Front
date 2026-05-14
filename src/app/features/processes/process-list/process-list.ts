@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -10,7 +11,7 @@ import { Process, ProcessStatus } from '../models/process.model';
 @Component({
   selector: 'app-process-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, CdkDropList, CdkDrag, CdkDragHandle],
   templateUrl: './process-list.html',
   styleUrl: './process-list.css'
 })
@@ -41,6 +42,14 @@ export class ProcessList implements OnInit {
     this.nameFilter = '';
     this.statusFilter = '';
     this.loadProcesses();
+  }
+
+  dropProcess(event: CdkDragDrop<Process[]>): void {
+    if (event.previousIndex === event.currentIndex) {
+      return;
+    }
+
+    moveItemInArray(this.filteredProcesses, event.previousIndex, event.currentIndex);
   }
 
   private loadProcesses(status?: ProcessStatus): void {

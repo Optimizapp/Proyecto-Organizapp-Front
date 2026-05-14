@@ -40,9 +40,22 @@
     <li *ngFor="let fieldError of fieldErrors | keyvalue">{{ fieldError.key }}: {{ fieldError.value }}</li>
   </ul>
 
-  <div class="process-grid" *ngIf="!isLoading && !error && filteredProcesses.length > 0; else noProcesses">
-    <div class="process-card" *ngFor="let process of filteredProcesses">
-      <h3>{{ process.name }}</h3>
+  <p *ngIf="!isLoading && !error && filteredProcesses.length > 0" class="drag-help">
+    El orden se actualiza solo visualmente en esta versión.
+  </p>
+
+  <div
+    class="process-grid local-dnd-list"
+    *ngIf="!isLoading && !error && filteredProcesses.length > 0; else noProcesses"
+    cdkDropList
+    [cdkDropListData]="filteredProcesses"
+    (cdkDropListDropped)="dropProcess($event)"
+  >
+    <div class="process-card local-dnd-item" *ngFor="let process of filteredProcesses" cdkDrag>
+      <div class="process-card-header">
+        <button type="button" cdkDragHandle class="drag-handle" aria-label="Mover proceso">::</button>
+        <h3>{{ process.name }}</h3>
+      </div>
       <p>{{ process.description }}</p>
       <span class="status">Estado: {{ process.status }}</span>
 
